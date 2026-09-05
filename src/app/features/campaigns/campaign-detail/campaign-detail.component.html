@@ -58,7 +58,11 @@
       <div class="join-code-actions">
         <button mat-stroked-button (click)="copyCode()" matTooltip="Copiar código">
           <mat-icon>{{ codeCopied() ? 'check' : 'content_copy' }}</mat-icon>
-          {{ codeCopied() ? 'Copiado' : 'Copiar' }}
+          {{ codeCopied() ? 'Copiado' : 'Código' }}
+        </button>
+        <button mat-raised-button color="primary" (click)="copyJoinUrl()" matTooltip="Copiar enlace de invitación">
+          <mat-icon>{{ linkCopied() ? 'check' : 'link' }}</mat-icon>
+          {{ linkCopied() ? '¡Enlace copiado!' : 'Copiar enlace' }}
         </button>
         <button mat-stroked-button (click)="regenerateCode()" [disabled]="regenerating()" matTooltip="Generar nuevo código">
           @if (regenerating()) {

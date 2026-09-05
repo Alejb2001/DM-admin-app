@@ -39,6 +39,10 @@ export class CampaignService {
     return this.http.post<Campaign>(`${this.base}/join`, { token });
   }
 
+  getPreview(code: string) {
+    return this.http.get<{ name: string }>(`${this.base}/preview/${code}`);
+  }
+
   joinByCode(code: string) {
     return this.http.post<Campaign>(`${this.base}/join-by-code`, { code });
   }

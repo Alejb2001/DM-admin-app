@@ -110,6 +110,7 @@ export class CampaignDetailComponent implements OnInit, OnDestroy {
   }
 
   codeCopied = signal(false);
+  linkCopied = signal(false);
   regenerating = signal(false);
 
   copyCode() {
@@ -118,6 +119,16 @@ export class CampaignDetailComponent implements OnInit, OnDestroy {
     navigator.clipboard.writeText(code).then(() => {
       this.codeCopied.set(true);
       setTimeout(() => this.codeCopied.set(false), 2000);
+    });
+  }
+
+  copyJoinUrl() {
+    const code = this.campaign()?.joinCode;
+    if (!code) return;
+    const url = `${window.location.origin}/join/${code}`;
+    navigator.clipboard.writeText(url).then(() => {
+      this.linkCopied.set(true);
+      setTimeout(() => this.linkCopied.set(false), 2000);
     });
   }
 

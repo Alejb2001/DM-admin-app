@@ -7,6 +7,10 @@ export const routes: Routes = [
     loadComponent: () => import('./features/landing/landing.component').then(m => m.LandingComponent),
   },
   {
+    path: 'join/:code',
+    loadComponent: () => import('./features/campaigns/join/join.component').then(m => m.JoinComponent),
+  },
+  {
     path: 'auth',
     canActivate: [guestGuard],
     loadChildren: () => import('./features/auth/auth.routes').then(m => m.AUTH_ROUTES),
