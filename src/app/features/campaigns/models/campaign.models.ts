@@ -15,6 +15,7 @@ export interface CampaignDetail {
   createdAt: string;
   members: Member[];
   roles: CampaignRole[];
+  joinCode: string;
 }
 
 export interface Member {

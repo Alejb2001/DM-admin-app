@@ -109,6 +109,30 @@ export class CampaignDetailComponent implements OnInit, OnDestroy {
     this.service.updateMemberRole(this.id(), member.userId, roleId).subscribe(() => this.load());
   }
 
+  codeCopied = signal(false);
+  regenerating = signal(false);
+
+  copyCode() {
+    const code = this.campaign()?.joinCode;
+    if (!code) return;
+    navigator.clipboard.writeText(code).then(() => {
+      this.codeCopied.set(true);
+      setTimeout(() => this.codeCopied.set(false), 2000);
+    });
+  }
+
+  regenerateCode() {
+    const id = this.id();
+    this.regenerating.set(true);
+    this.service.regenerateCode(id).subscribe({
+      next: res => {
+        this.campaign.update(c => c ? { ...c, joinCode: res.joinCode } : c);
+        this.regenerating.set(false);
+      },
+      error: () => this.regenerating.set(false),
+    });
+  }
+
   exportCampaign() {
     const c = this.campaign();
     if (!c) return;

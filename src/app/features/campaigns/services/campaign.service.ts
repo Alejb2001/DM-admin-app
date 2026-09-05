@@ -39,6 +39,14 @@ export class CampaignService {
     return this.http.post<Campaign>(`${this.base}/join`, { token });
   }
 
+  joinByCode(code: string) {
+    return this.http.post<Campaign>(`${this.base}/join-by-code`, { code });
+  }
+
+  regenerateCode(campaignId: string) {
+    return this.http.post<{ joinCode: string }>(`${this.base}/${campaignId}/regenerate-code`, {});
+  }
+
   updateMemberRole(campaignId: string, memberId: string, roleId: string) {
     return this.http.put<void>(
       `${this.base}/${campaignId}/members/${memberId}/role`,
