@@ -28,10 +28,10 @@ export class CampaignService {
     return this.http.delete<void>(`${this.base}/${id}`);
   }
 
-  createInvitation(campaignId: string, roleId: string, expiryHours = 168) {
+  createInvitation(campaignId: string, roleId: string, email?: string, recipientName?: string, expiryHours = 168) {
     return this.http.post<Invitation>(
       `${this.base}/${campaignId}/invitations`,
-      { roleId, expiryHours }
+      { roleId, expiryHours, email: email || null, recipientName: recipientName || null }
     );
   }
 

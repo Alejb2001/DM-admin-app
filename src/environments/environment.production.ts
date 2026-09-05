@@ -1,5 +1,5 @@
 export const environment = {
   production: true,
-  apiUrl: '/api',
-  signalrUrl: '/hubs',
+  apiUrl: 'https://dm-admin-api.onrender.com/api',
+  signalrUrl: 'https://dm-admin-api.onrender.com/hubs',
 };

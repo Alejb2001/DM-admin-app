@@ -19,7 +19,7 @@ import { CampaignRole, Invitation } from '../models/campaign.models';
     <h2 mat-dialog-title>Invitar Jugadores</h2>
     <mat-dialog-content>
       @if (!invitation()) {
-        <p>Genera un link de invitación para que los jugadores se unan.</p>
+        <p>Genera un link de invitación. Opcionalmente envíalo por email.</p>
         <mat-form-field appearance="outline" style="width:100%">
           <mat-label>Rol al unirse</mat-label>
           <mat-select [(ngModel)]="selectedRoleId">
@@ -28,11 +28,24 @@ import { CampaignRole, Invitation } from '../models/campaign.models';
             }
           </mat-select>
         </mat-form-field>
+        <mat-form-field appearance="outline" style="width:100%">
+          <mat-label>Email del jugador (opcional)</mat-label>
+          <mat-icon matPrefix>email</mat-icon>
+          <input matInput type="email" [(ngModel)]="recipientEmail" placeholder="jugador@ejemplo.com" />
+        </mat-form-field>
+        @if (recipientEmail) {
+          <mat-form-field appearance="outline" style="width:100%">
+            <mat-label>Nombre del jugador (opcional)</mat-label>
+            <input matInput [(ngModel)]="recipientName" placeholder="Nombre para el email" />
+          </mat-form-field>
+        }
         <button mat-raised-button color="primary" (click)="generate()" [disabled]="!selectedRoleId || loading">
-          Generar link
+          {{ recipientEmail ? 'Generar y enviar email' : 'Generar link' }}
         </button>
       } @else {
-        <p>Comparte este link. Expira el {{ invitation()!.expiresAt | date:'shortDate' }}.</p>
+        <p>Comparte este link. Expira el {{ invitation()!.expiresAt | date:'shortDate' }}.
+          @if (emailSent) { <strong> Email enviado.</strong> }
+        </p>
         <mat-form-field appearance="outline" style="width:100%">
           <mat-label>Link de invitación</mat-label>
           <input matInput readonly [value]="inviteUrl()" #linkInput />
@@ -53,7 +66,10 @@ export class CampaignInviteDialogComponent {
   private snack = inject(MatSnackBar);
 
   selectedRoleId = '';
+  recipientEmail = '';
+  recipientName = '';
   loading = false;
+  emailSent = false;
   invitation = signal<Invitation | null>(null);
 
   inviteUrl() {
@@ -62,8 +78,17 @@ export class CampaignInviteDialogComponent {
 
   generate() {
     this.loading = true;
-    this.service.createInvitation(this.data.campaignId, this.selectedRoleId).subscribe({
-      next: inv => { this.invitation.set(inv); this.loading = false; },
+    this.service.createInvitation(
+      this.data.campaignId,
+      this.selectedRoleId,
+      this.recipientEmail || undefined,
+      this.recipientName || undefined,
+    ).subscribe({
+      next: inv => {
+        this.invitation.set(inv);
+        this.emailSent = !!this.recipientEmail;
+        this.loading = false;
+      },
       error: () => { this.loading = false; },
     });
   }
