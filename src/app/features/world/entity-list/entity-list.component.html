@@ -1,0 +1,109 @@
+<div class="page-header">
+  <div>
+    <h1>Mundo</h1>
+    <p class="subtitle">{{ entities().length }} entidad{{ entities().length === 1 ? '' : 'es' }}</p>
+  </div>
+  <div class="header-actions">
+    <button mat-stroked-button (click)="goToGraph()" matTooltip="Vista de grafo">
+      <mat-icon>hub</mat-icon> Grafo
+    </button>
+    <button mat-stroked-button (click)="openTypeManager()" matTooltip="Gestionar tipos de entidad">
+      <mat-icon>tune</mat-icon> Tipos
+    </button>
+    <button mat-stroked-button (click)="openRelationshipTypeManager()" matTooltip="Tipos de relación">
+      <mat-icon>sync_alt</mat-icon> Relaciones
+    </button>
+    <button mat-raised-button color="primary" (click)="openCreate()">
+      <mat-icon>add</mat-icon> Nueva entidad
+    </button>
+  </div>
+</div>
+
+<!-- Search bar -->
+<div class="search-row">
+  <mat-form-field appearance="outline" class="search-field">
+    <mat-label>Buscar entidades...</mat-label>
+    <mat-icon matPrefix>search</mat-icon>
+    <input matInput [value]="searchQuery()" (input)="onSearch($any($event.target).value)" />
+    @if (searchQuery()) {
+      <button matSuffix mat-icon-button (click)="clearSearch()">
+        <mat-icon>close</mat-icon>
+      </button>
+    }
+  </mat-form-field>
+  @if (searching()) {
+    <mat-spinner diameter="24" style="margin-left:8px" />
+  }
+</div>
+
+<!-- Type filter chips (hidden during search) -->
+@if (!searchQuery()) {
+  <div class="type-filters">
+    <button mat-stroked-button
+      [class.active]="selectedTypeId() === null"
+      (click)="filterByType(null)">
+      Todas
+    </button>
+    @for (type of types(); track type.id) {
+      <button mat-stroked-button
+        [class.active]="selectedTypeId() === type.id"
+        [style.border-color]="type.color || '#ccc'"
+        [style.color]="selectedTypeId() === type.id ? '#fff' : type.color"
+        [style.background]="selectedTypeId() === type.id ? (type.color || '#666') : 'transparent'"
+        (click)="filterByType(type.id)">
+        <mat-icon>{{ type.icon || 'label' }}</mat-icon>
+        {{ type.name }}
+      </button>
+    }
+  </div>
+}
+
+@if (loading()) {
+  <div class="center"><mat-spinner /></div>
+} @else if (searchQuery() && searchResults() !== null && filtered().length === 0) {
+  <div class="empty-state">
+    <mat-icon>search_off</mat-icon>
+    <p>Sin resultados para "{{ searchQuery() }}"</p>
+  </div>
+} @else if (!searchQuery() && filtered().length === 0) {
+  <div class="empty-state">
+    <mat-icon>public</mat-icon>
+    <p>No hay entidades{{ selectedTypeId() ? ' de este tipo' : '' }} todavía.</p>
+    <button mat-raised-button color="primary" (click)="openCreate()">Crear primera entidad</button>
+  </div>
+} @else {
+  @if (searchQuery()) {
+    <p class="search-summary">{{ filtered().length }} resultado{{ filtered().length === 1 ? '' : 's' }} para "{{ searchQuery() }}"</p>
+  }
+  <div class="grid">
+    @for (entity of filtered(); track entity.id) {
+      <mat-card class="entity-card" [routerLink]="[entity.id]"
+        [style.border-left]="'4px solid ' + (entity.entityTypeColor || '#ccc')">
+        <mat-card-header>
+          <mat-icon mat-card-avatar [style.color]="entity.entityTypeColor || '#666'">
+            {{ entity.entityTypeIcon || 'label' }}
+          </mat-icon>
+          <mat-card-title>{{ entity.name }}</mat-card-title>
+          <mat-card-subtitle>{{ entity.entityTypeName }}</mat-card-subtitle>
+        </mat-card-header>
+      </mat-card>
+    }
+  </div>
+}
+
+<style>
+  .page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+  .subtitle { color: #757575; margin: 0; }
+  .header-actions { display: flex; gap: 8px; align-items: center; }
+  .search-row { display: flex; align-items: center; margin-bottom: 8px; }
+  .search-field { width: 100%; }
+  .type-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
+  .type-filters button { transition: all .2s; }
+  .search-summary { font-size: 13px; color: #757575; margin-bottom: 12px; }
+  .center { display: flex; justify-content: center; padding: 48px; }
+  .empty-state { text-align: center; padding: 64px; color: #757575; }
+  .empty-state mat-icon { font-size: 64px; height: 64px; width: 64px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+  .entity-card { cursor: pointer; transition: box-shadow .2s; }
+  .entity-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.12); }
+</style>

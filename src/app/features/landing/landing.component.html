@@ -1,0 +1,312 @@
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-badge">
+      <mat-icon>auto_awesome</mat-icon> Gestión de mundos para DMs
+    </div>
+    <h1 class="hero-title">Tu mundo, tus reglas.<br>Tu campaña, organizada.</h1>
+    <p class="hero-sub">
+      DM Admin es la herramienta todo-en-uno para directores de juego.
+      Crea entidades, gestiona relaciones, controla la revelación y colabora
+      en tiempo real con tus jugadores.
+    </p>
+    <div class="hero-ctas">
+      <a mat-raised-button color="primary" routerLink="/auth/register" class="cta-primary">
+        <mat-icon>rocket_launch</mat-icon> Empezar gratis
+      </a>
+      <a mat-stroked-button routerLink="/auth/login" class="cta-secondary">
+        Ya tengo cuenta
+      </a>
+    </div>
+    <p class="hero-note">Sin tarjeta de crédito. Sin compromisos.</p>
+  </div>
+
+  <div class="hero-visual">
+    <div class="hero-card card-1">
+      <mat-icon style="color:#7E57C2">castle</mat-icon>
+      <span>Castillo de Ironhold</span>
+      <span class="tag">Lugar</span>
+    </div>
+    <div class="hero-card card-2">
+      <mat-icon style="color:#EF5350">person</mat-icon>
+      <span>Lyra Shadowmere</span>
+      <span class="tag">Personaje</span>
+    </div>
+    <div class="hero-card card-3">
+      <mat-icon style="color:#66BB6A">groups</mat-icon>
+      <span>Orden del Crepúsculo</span>
+      <span class="tag">Facción</span>
+    </div>
+    <div class="hero-rel">
+      <mat-icon>arrow_forward</mat-icon>
+      <span>lidera</span>
+    </div>
+  </div>
+</section>
+
+<!-- Features -->
+<section class="features">
+  <div class="section-label">Funcionalidades</div>
+  <h2>Todo lo que necesitas para dirigir</h2>
+  <div class="features-grid">
+    @for (f of features; track f.title) {
+      <div class="feature-card">
+        <div class="feature-icon">
+          <mat-icon>{{ f.icon }}</mat-icon>
+        </div>
+        <h3>{{ f.title }}</h3>
+        <p>{{ f.desc }}</p>
+      </div>
+    }
+  </div>
+</section>
+
+<!-- Pricing -->
+<section class="pricing">
+  <div class="section-label">Planes</div>
+  <h2>Empieza gratis, escala cuando quieras</h2>
+  <div class="plans-grid">
+    @for (plan of plans; track plan.name) {
+      <div class="plan-card" [class.highlight]="plan.highlight">
+        @if (plan.highlight) {
+          <div class="popular-badge">Más popular</div>
+        }
+        <div class="plan-name" [style.color]="plan.color">{{ plan.name }}</div>
+        <div class="plan-price">
+          <span class="price-amount">{{ plan.price }}</span>
+          <span class="price-period">{{ plan.period }}</span>
+        </div>
+        <ul class="plan-features">
+          @for (feat of plan.features; track feat) {
+            <li>
+              <mat-icon class="check-icon">check_circle</mat-icon>
+              {{ feat }}
+            </li>
+          }
+        </ul>
+        <a mat-raised-button [routerLink]="plan.link"
+           [style.background]="plan.highlight ? plan.color : ''"
+           [style.color]="plan.highlight ? '#fff' : plan.color"
+           class="plan-cta">
+          {{ plan.cta }}
+        </a>
+      </div>
+    }
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="footer-brand">
+    <mat-icon>shield</mat-icon>
+    <span>DM Admin</span>
+  </div>
+  <p class="footer-copy">
+    Hecho con dedicación para directores de juego.
+    &copy; {{ 2026 }} DM Admin.
+  </p>
+  <div class="footer-links">
+    <a routerLink="/auth/register">Registro</a>
+    <a routerLink="/auth/login">Iniciar sesión</a>
+  </div>
+</footer>
+
+<style>
+  :host { display: block; font-family: 'Roboto', sans-serif; }
+
+  /* ── Hero ── */
+  .hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 48px;
+    min-height: 540px;
+    padding: 80px 10vw 60px;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%);
+    color: #fff;
+  }
+  .hero-inner { flex: 1; max-width: 580px; }
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,.1);
+    border: 1px solid rgba(255,255,255,.2);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    margin-bottom: 24px;
+  }
+  .hero-badge mat-icon { font-size: 16px; height: 16px; width: 16px; }
+  .hero-title {
+    font-size: clamp(28px, 4vw, 52px);
+    font-weight: 700;
+    line-height: 1.2;
+    margin: 0 0 20px;
+  }
+  .hero-sub {
+    font-size: 17px;
+    line-height: 1.6;
+    color: rgba(255,255,255,.75);
+    margin-bottom: 36px;
+  }
+  .hero-ctas { display: flex; gap: 16px; flex-wrap: wrap; }
+  .cta-primary { padding: 10px 24px !important; font-size: 15px !important; background: #7E57C2 !important; }
+  .cta-secondary { padding: 10px 24px !important; font-size: 15px !important; color: rgba(255,255,255,.85) !important; border-color: rgba(255,255,255,.4) !important; }
+  .hero-note { font-size: 13px; color: rgba(255,255,255,.45); margin-top: 16px; }
+
+  .hero-visual {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .hero-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255,255,255,.08);
+    border: 1px solid rgba(255,255,255,.15);
+    border-radius: 12px;
+    padding: 14px 20px;
+    backdrop-filter: blur(8px);
+    font-size: 15px;
+    font-weight: 500;
+    width: 240px;
+  }
+  .card-2 { margin-left: 32px; }
+  .hero-card .tag {
+    margin-left: auto;
+    font-size: 11px;
+    color: rgba(255,255,255,.5);
+    background: rgba(255,255,255,.08);
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+  .hero-rel {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: rgba(255,255,255,.45);
+    padding-left: 32px;
+  }
+  .hero-rel mat-icon { font-size: 16px; height: 16px; width: 16px; }
+
+  /* ── Features ── */
+  .features {
+    padding: 80px 10vw;
+    background: #f8f9fa;
+    text-align: center;
+  }
+  .section-label {
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: #7E57C2;
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+  .features h2 { font-size: clamp(22px, 3vw, 36px); font-weight: 700; margin: 0 0 48px; }
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 24px;
+    text-align: left;
+  }
+  .feature-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 28px 24px;
+    border: 1px solid #ede7f6;
+    transition: box-shadow .2s;
+  }
+  .feature-card:hover { box-shadow: 0 6px 24px rgba(126,87,194,.12); }
+  .feature-icon {
+    width: 48px; height: 48px;
+    background: #ede7f6;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 16px;
+  }
+  .feature-icon mat-icon { color: #7E57C2; }
+  .feature-card h3 { margin: 0 0 8px; font-size: 16px; }
+  .feature-card p { margin: 0; font-size: 14px; color: #616161; line-height: 1.6; }
+
+  /* ── Pricing ── */
+  .pricing {
+    padding: 80px 10vw;
+    text-align: center;
+  }
+  .pricing h2 { font-size: clamp(22px, 3vw, 36px); font-weight: 700; margin: 0 0 48px; }
+  .plans-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 24px;
+    align-items: start;
+  }
+  .plan-card {
+    border: 2px solid #e0e0e0;
+    border-radius: 20px;
+    padding: 32px 28px;
+    position: relative;
+    text-align: left;
+    transition: box-shadow .2s;
+  }
+  .plan-card.highlight {
+    border-color: #7E57C2;
+    box-shadow: 0 8px 32px rgba(126,87,194,.18);
+  }
+  .popular-badge {
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #7E57C2;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 16px;
+    border-radius: 12px;
+    white-space: nowrap;
+  }
+  .plan-name { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+  .plan-price { display: flex; align-items: baseline; gap: 4px; margin-bottom: 24px; }
+  .price-amount { font-size: 40px; font-weight: 800; }
+  .price-period { font-size: 14px; color: #9e9e9e; }
+  .plan-features { list-style: none; padding: 0; margin: 0 0 28px; display: flex; flex-direction: column; gap: 10px; }
+  .plan-features li { display: flex; align-items: center; gap: 10px; font-size: 14px; }
+  .check-icon { font-size: 18px; height: 18px; width: 18px; color: #66BB6A; }
+  .plan-cta { width: 100%; justify-content: center !important; }
+
+  /* ── Footer ── */
+  .footer {
+    background: #1a1a2e;
+    color: rgba(255,255,255,.6);
+    padding: 40px 10vw;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .footer-brand { display: flex; align-items: center; gap: 8px; color: #fff; font-size: 18px; font-weight: 700; }
+  .footer-copy { margin: 0; font-size: 13px; flex: 1; }
+  .footer-links { display: flex; gap: 16px; }
+  .footer-links a { color: rgba(255,255,255,.6); text-decoration: none; font-size: 14px; }
+  .footer-links a:hover { color: #fff; }
+
+  /* ── Responsive ── */
+  @media (max-width: 768px) {
+    .hero {
+      flex-direction: column;
+      padding: 48px 5vw 40px;
+      text-align: center;
+    }
+    .hero-ctas { justify-content: center; }
+    .hero-visual { display: none; }
+    .features, .pricing { padding: 48px 5vw; }
+    .footer { flex-direction: column; text-align: center; }
+    .footer-links { justify-content: center; }
+  }
+</style>

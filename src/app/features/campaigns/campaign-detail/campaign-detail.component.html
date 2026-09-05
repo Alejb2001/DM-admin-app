@@ -1,0 +1,125 @@
+@if (loading()) {
+  <div style="display:flex;justify-content:center;padding:48px"><mat-spinner /></div>
+} @else {
+  @if (campaign(); as c) {
+  <div class="header">
+    <div>
+      <a routerLink="/campaigns" class="back-link">
+        <mat-icon>arrow_back</mat-icon> Mis Campañas
+      </a>
+      <h1>{{ c.name }}</h1>
+      @if (c.description) { <p class="desc">{{ c.description }}</p> }
+    </div>
+    <div class="actions">
+      <button mat-raised-button color="accent" [routerLink]="['world']">
+        <mat-icon>map</mat-icon> Ver Mundo
+      </button>
+      @if (isOwner) {
+        <button mat-raised-button (click)="openInvite()">
+          <mat-icon>person_add</mat-icon> Invitar
+        </button>
+        <button mat-stroked-button (click)="exportCampaign()" [disabled]="exporting()" matTooltip="Exportar campaña como JSON">
+          @if (exporting()) {
+            <mat-spinner diameter="16" />
+          } @else {
+            <mat-icon>download</mat-icon>
+          }
+          Exportar
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- Presence indicator -->
+  @if (presence().length > 0) {
+    <div class="presence-bar">
+      <mat-icon class="presence-icon">wifi</mat-icon>
+      <span class="presence-label">En línea ahora:</span>
+      @for (p of presence(); track p.userId) {
+        <div class="presence-chip" [matTooltip]="p.displayName">
+          <span class="presence-dot"></span>
+          {{ p.displayName }}
+        </div>
+      }
+    </div>
+  }
+
+  <mat-divider />
+
+  <h2>Miembros ({{ c.members.length }})</h2>
+
+  <table mat-table [dataSource]="c.members" class="members-table">
+    <ng-container matColumnDef="avatar">
+      <th mat-header-cell *matHeaderCellDef></th>
+      <td mat-cell *matCellDef="let m">
+        <div class="avatar-wrapper">
+          <mat-icon>account_circle</mat-icon>
+          @if (isOnline(m.userId)) {
+            <span class="online-dot" matTooltip="En línea"></span>
+          }
+        </div>
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="name">
+      <th mat-header-cell *matHeaderCellDef>Nombre</th>
+      <td mat-cell *matCellDef="let m">{{ m.displayName }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="role">
+      <th mat-header-cell *matHeaderCellDef>Rol</th>
+      <td mat-cell *matCellDef="let m">
+        <mat-chip>{{ m.roleName }}</mat-chip>
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="joined">
+      <th mat-header-cell *matHeaderCellDef>Se unió</th>
+      <td mat-cell *matCellDef="let m">{{ m.joinedAt | date:'shortDate' }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="actions">
+      <th mat-header-cell *matHeaderCellDef></th>
+      <td mat-cell *matCellDef="let m">
+        @if (isOwner && m.userId !== campaign()!.ownerId) {
+          <button mat-icon-button [matMenuTriggerFor]="memberMenu">
+            <mat-icon>more_vert</mat-icon>
+          </button>
+          <mat-menu #memberMenu>
+            @for (role of campaign()!.roles; track role.id) {
+              <button mat-menu-item (click)="changeRole(m, role.id)">
+                Cambiar a {{ role.name }}
+              </button>
+            }
+            <mat-divider />
+            <button mat-menu-item (click)="removeMember(m)" style="color:#f44336">
+              <mat-icon color="warn">remove_circle</mat-icon> Expulsar
+            </button>
+          </mat-menu>
+        }
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+  </table>
+  }
+}
+
+<style>
+  .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+  .actions { display: flex; gap: 8px; margin-top: 8px; }
+  .back-link { display: flex; align-items: center; gap: 4px; color: #616161; text-decoration: none; font-size: 14px; margin-bottom: 8px; }
+  .desc { color: #757575; }
+  .members-table { width: 100%; }
+  h2 { margin-top: 24px; }
+
+  .presence-bar { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #e8f5e9; border-radius: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .presence-icon { color: #43a047; font-size: 18px; height: 18px; width: 18px; }
+  .presence-label { font-size: 13px; color: #2e7d32; font-weight: 500; }
+  .presence-chip { display: flex; align-items: center; gap: 4px; font-size: 13px; color: #1b5e20; background: #c8e6c9; padding: 2px 8px; border-radius: 12px; }
+  .presence-dot { width: 8px; height: 8px; border-radius: 50%; background: #43a047; }
+
+  .avatar-wrapper { position: relative; display: inline-flex; }
+  .online-dot { position: absolute; bottom: 0; right: 0; width: 10px; height: 10px; border-radius: 50%; background: #43a047; border: 2px solid #fff; }
+</style>

@@ -1,0 +1,67 @@
+<div class="graph-page">
+  <div class="graph-toolbar">
+    <a [routerLink]="['..']" mat-icon-button matTooltip="Volver al mundo">
+      <mat-icon>arrow_back</mat-icon>
+    </a>
+    <span class="graph-title">Grafo del mundo</span>
+    <span class="graph-stats">{{ nodeCount }} entidades · {{ edgeCount }} relaciones</span>
+    <div style="flex:1"></div>
+    <button mat-icon-button (click)="fitGraph()" matTooltip="Ajustar vista">
+      <mat-icon>fit_screen</mat-icon>
+    </button>
+    <button mat-icon-button (click)="resetLayout()" matTooltip="Reorganizar">
+      <mat-icon>auto_graph</mat-icon>
+    </button>
+    <button mat-icon-button (click)="loadGraph()" matTooltip="Recargar">
+      <mat-icon>refresh</mat-icon>
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-overlay">
+      <mat-spinner />
+      <p>Cargando grafo...</p>
+    </div>
+  }
+
+  @if (!loading() && nodeCount === 0) {
+    <div class="empty-graph">
+      <mat-icon>hub</mat-icon>
+      <p>No hay entidades visibles para graficar.</p>
+      <p style="font-size:13px;color:#9e9e9e">Crea entidades y defíne relaciones entre ellas.</p>
+      <a [routerLink]="['..']" mat-raised-button color="primary">Ir al mundo</a>
+    </div>
+  }
+
+  <div #cytoscapeContainer class="cy-container" [class.hidden]="loading() || nodeCount === 0"></div>
+
+  @if (selectedNode(); as node) {
+    <div class="node-panel">
+      <strong>{{ node.name }}</strong>
+      <span class="node-type">{{ node.entityTypeName }}</span>
+      <a [routerLink]="['..', node.id]" mat-stroked-button style="margin-top:8px">
+        <mat-icon>open_in_new</mat-icon> Ver entidad
+      </a>
+    </div>
+  }
+</div>
+
+<style>
+  .graph-page { display: flex; flex-direction: column; height: calc(100vh - 64px); }
+  .graph-toolbar { display: flex; align-items: center; gap: 8px; padding: 8px 16px; background: #fff; border-bottom: 1px solid #e0e0e0; flex-shrink: 0; }
+  .graph-title { font-size: 16px; font-weight: 600; }
+  .graph-stats { font-size: 13px; color: #9e9e9e; }
+  .cy-container { flex: 1; background: #fafafa; }
+  .cy-container.hidden { display: none; }
+  .loading-overlay { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; color: #9e9e9e; }
+  .empty-graph { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; color: #9e9e9e; }
+  .empty-graph mat-icon { font-size: 72px; height: 72px; width: 72px; }
+  .node-panel {
+    position: absolute; bottom: 24px; right: 24px;
+    background: #fff; border-radius: 12px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+    padding: 16px; display: flex; flex-direction: column; gap: 4px;
+    min-width: 180px;
+  }
+  .node-type { font-size: 12px; color: #9e9e9e; }
+</style>

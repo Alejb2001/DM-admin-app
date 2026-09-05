@@ -1,0 +1,199 @@
+<h2 mat-dialog-title>Gestionar tipos de entidad</h2>
+
+<mat-dialog-content class="manager-content">
+  <div class="layout">
+    <!-- Left: type list -->
+    <div class="type-list">
+      <div class="type-list-header">
+        <span class="list-title">Tipos</span>
+        <button mat-icon-button (click)="showNewTypeForm.set(true)" matTooltip="Nuevo tipo">
+          <mat-icon>add</mat-icon>
+        </button>
+      </div>
+
+      @if (showNewTypeForm()) {
+        <div class="new-type-form">
+          <mat-form-field appearance="outline" style="width:100%">
+            <mat-label>Nombre</mat-label>
+            <input matInput [(ngModel)]="newTypeName" placeholder="Ej: Dios, Gremio..." />
+          </mat-form-field>
+          <div class="icon-color-row">
+            <mat-form-field appearance="outline" style="flex:1">
+              <mat-label>Ícono Material</mat-label>
+              <input matInput [(ngModel)]="newTypeIcon" />
+              <mat-icon matSuffix>{{ newTypeIcon || 'label' }}</mat-icon>
+            </mat-form-field>
+            <input type="color" [(ngModel)]="newTypeColor" class="color-picker" matTooltip="Color" />
+          </div>
+          <div class="icon-suggestions">
+            @for (icon of iconSuggestions; track icon) {
+              <button mat-icon-button (click)="newTypeIcon = icon" [style.color]="newTypeIcon === icon ? newTypeColor : '#9e9e9e'" matTooltip="{{ icon }}">
+                <mat-icon>{{ icon }}</mat-icon>
+              </button>
+            }
+          </div>
+          <div class="form-actions">
+            <button mat-raised-button color="primary" (click)="createType()" [disabled]="saving() || !newTypeName.trim()">
+              Crear
+            </button>
+            <button mat-button (click)="showNewTypeForm.set(false)">Cancelar</button>
+          </div>
+        </div>
+        <mat-divider />
+      }
+
+      @for (type of types(); track type.id) {
+        <div class="type-item" [class.selected]="selectedType()?.id === type.id" (click)="selectType(type)">
+          <mat-icon [style.color]="type.color || '#666'">{{ type.icon || 'label' }}</mat-icon>
+          <span class="type-name">{{ type.name }}</span>
+          @if (type.isSystemDefault) {
+            <span class="system-badge">sistema</span>
+          }
+        </div>
+      }
+    </div>
+
+    <mat-divider [vertical]="true" />
+
+    <!-- Right: selected type detail -->
+    <div class="type-detail">
+      @if (!selectedType()) {
+        <div class="empty-hint">
+          <mat-icon>arrow_back</mat-icon>
+          <p>Selecciona un tipo para configurarlo</p>
+        </div>
+      } @else {
+        @if (selectedType(); as type) {
+          <div class="detail-header">
+            <mat-icon [style.color]="type.color || '#666'" style="font-size:28px;height:28px;width:28px">
+              {{ type.icon || 'label' }}
+            </mat-icon>
+            @if (!editingType()) {
+              <h3>{{ type.name }}</h3>
+              @if (!type.isSystemDefault) {
+                <button mat-icon-button (click)="editingType.set(true)" matTooltip="Editar tipo">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button mat-icon-button color="warn" (click)="deleteType()" matTooltip="Eliminar tipo">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              }
+            } @else {
+              <mat-form-field appearance="outline" style="flex:1">
+                <mat-label>Nombre</mat-label>
+                <input matInput [(ngModel)]="editTypeName" />
+              </mat-form-field>
+              <input type="color" [(ngModel)]="editTypeColor" class="color-picker" />
+              <button mat-raised-button color="primary" (click)="saveTypeEdit()" [disabled]="saving()">Guardar</button>
+              <button mat-button (click)="editingType.set(false)">Cancelar</button>
+            }
+          </div>
+
+          <mat-divider style="margin:12px 0" />
+
+          <div class="fields-header">
+            <span class="fields-title">Campos personalizados</span>
+            @if (!type.isSystemDefault) {
+              <button mat-stroked-button (click)="showNewFieldForm.set(!showNewFieldForm())">
+                <mat-icon>add</mat-icon> Agregar campo
+              </button>
+            }
+          </div>
+
+          @if (showNewFieldForm() && !type.isSystemDefault) {
+            <div class="new-field-form">
+              <mat-form-field appearance="outline">
+                <mat-label>Nombre del campo</mat-label>
+                <input matInput [(ngModel)]="newFieldName" placeholder="Ej: Nivel de poder..." />
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Tipo</mat-label>
+                <mat-select [(ngModel)]="newFieldType">
+                  @for (ft of fieldTypes; track ft) {
+                    <mat-option [value]="ft">{{ fieldTypeLabels[ft] }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+              <label class="required-check">
+                <mat-checkbox [(ngModel)]="newFieldRequired">Requerido</mat-checkbox>
+              </label>
+              <div class="form-actions">
+                <button mat-raised-button color="primary" (click)="addField()" [disabled]="saving() || !newFieldName.trim()">
+                  Agregar
+                </button>
+                <button mat-button (click)="showNewFieldForm.set(false)">Cancelar</button>
+              </div>
+            </div>
+            <mat-divider style="margin-bottom:12px" />
+          }
+
+          @if (type.fields.length === 0) {
+            <p class="no-fields">
+              @if (type.isSystemDefault) {
+                Los tipos del sistema no tienen campos configurables.
+              } @else {
+                Sin campos personalizados. Agrega campos para estructurar la información de esta entidad.
+              }
+            </p>
+          } @else {
+            <div class="fields-list">
+              @for (field of type.fields; track field.id) {
+                <div class="field-item">
+                  <mat-icon class="field-icon">{{ getFieldIcon(field.fieldType) }}</mat-icon>
+                  <div class="field-info">
+                    <span class="field-name">{{ field.name }}</span>
+                    <span class="field-type">{{ fieldTypeLabels[field.fieldType] }}</span>
+                    @if (field.isRequired) { <span class="required-badge">Requerido</span> }
+                  </div>
+                  @if (!type.isSystemDefault) {
+                    <button mat-icon-button color="warn" (click)="deleteField(field)" matTooltip="Eliminar campo">
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  }
+                </div>
+              }
+            </div>
+          }
+        }
+      }
+    </div>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-raised-button (click)="close()">Cerrar</button>
+</mat-dialog-actions>
+
+<style>
+  .manager-content { padding: 0 !important; min-height: 420px; }
+  .layout { display: flex; height: 480px; }
+  .type-list { width: 220px; overflow-y: auto; padding: 8px; flex-shrink: 0; }
+  .type-list-header { display: flex; align-items: center; justify-content: space-between; padding: 4px 8px; }
+  .list-title { font-weight: 600; font-size: 13px; color: #616161; text-transform: uppercase; letter-spacing: .5px; }
+  .type-item { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 8px; cursor: pointer; transition: background .15s; }
+  .type-item:hover { background: #f5f5f5; }
+  .type-item.selected { background: #e8eaf6; }
+  .type-name { flex: 1; font-size: 14px; }
+  .system-badge { font-size: 10px; color: #9e9e9e; background: #f5f5f5; padding: 2px 6px; border-radius: 4px; }
+  .type-detail { flex: 1; padding: 16px; overflow-y: auto; }
+  .empty-hint { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #9e9e9e; gap: 8px; }
+  .detail-header { display: flex; align-items: center; gap: 8px; }
+  .detail-header h3 { margin: 0; flex: 1; }
+  .fields-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .fields-title { font-weight: 600; font-size: 14px; }
+  .fields-list { display: flex; flex-direction: column; gap: 4px; }
+  .field-item { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #fafafa; border-radius: 6px; border: 1px solid #eee; }
+  .field-icon { color: #9e9e9e; font-size: 18px; height: 18px; width: 18px; }
+  .field-info { flex: 1; display: flex; gap: 8px; align-items: center; }
+  .field-name { font-size: 14px; font-weight: 500; }
+  .field-type { font-size: 12px; color: #9e9e9e; background: #f0f0f0; padding: 2px 6px; border-radius: 4px; }
+  .required-badge { font-size: 11px; color: #e53935; }
+  .no-fields { color: #9e9e9e; font-size: 13px; padding: 16px 0; }
+  .new-type-form, .new-field-form { padding: 8px; display: flex; flex-direction: column; gap: 8px; background: #f9f9f9; border-radius: 8px; margin-bottom: 8px; }
+  .new-field-form { margin-bottom: 0; }
+  .icon-color-row { display: flex; gap: 8px; align-items: center; }
+  .icon-suggestions { display: flex; flex-wrap: wrap; gap: 2px; }
+  .color-picker { width: 40px; height: 40px; border: none; border-radius: 6px; cursor: pointer; padding: 2px; }
+  .form-actions { display: flex; gap: 8px; }
+  .required-check { display: flex; align-items: center; }
+</style>
