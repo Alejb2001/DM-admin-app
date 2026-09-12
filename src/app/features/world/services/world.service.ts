@@ -46,11 +46,11 @@ export class WorldService {
   }
 
   // ── Entity Type Fields ─────────────────────────────────────────────────────
-  addField(campaignId: string, typeId: string, data: { name: string; fieldType: string; isRequired: boolean; sortOrder: number }) {
+  addField(campaignId: string, typeId: string, data: { name: string; fieldType: string; isRequired: boolean; sortOrder: number; isRollFormula?: boolean }) {
     return this.http.post<EntityTypeField>(`${this.typeBase(campaignId)}/${typeId}/fields`, data);
   }
 
-  updateField(campaignId: string, typeId: string, fieldId: string, data: { name: string; fieldType: string; isRequired: boolean; sortOrder: number }) {
+  updateField(campaignId: string, typeId: string, fieldId: string, data: { name: string; fieldType: string; isRequired: boolean; sortOrder: number; isRollFormula?: boolean }) {
     return this.http.put<EntityTypeField>(`${this.typeBase(campaignId)}/${typeId}/fields/${fieldId}`, data);
   }
 

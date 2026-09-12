@@ -4,6 +4,8 @@ import * as signalR from '@microsoft/signalr';
 import { environment } from '../../../../environments/environment';
 import { AuthService } from '../../../core/services/auth.service';
 import { ChatMessage, SessionPresenceEntry } from '../models/session.models';
+import { SessionScene, MapToken, TokenMovedEvent } from '../models/map.models';
+import { CharacterResource } from '../../world/models/character-sheet.models';
 
 @Injectable({ providedIn: 'root' })
 export class SessionSignalRService {
@@ -14,6 +16,17 @@ export class SessionSignalRService {
   readonly messageReceived$ = new Subject<ChatMessage>();
   readonly presenceUpdated$ = new Subject<SessionPresenceEntry[]>();
   readonly sessionEnded$ = new Subject<void>();
+
+  // Map events
+  readonly sceneActivated$ = new Subject<SessionScene>();
+  readonly sceneUpdated$   = new Subject<SessionScene>();
+  readonly tokenAdded$     = new Subject<MapToken>();
+  readonly tokenMoved$     = new Subject<TokenMovedEvent>();
+  readonly tokenUpdated$   = new Subject<MapToken>();
+  readonly tokenRemoved$   = new Subject<string>();
+
+  // Sheet events
+  readonly resourceUpdated$ = new Subject<CharacterResource>();
 
   async connect(): Promise<void> {
     if (this.connection?.state === signalR.HubConnectionState.Connected) return;
@@ -75,6 +88,14 @@ export class SessionSignalRService {
     this.connection.on('SessionEnded', () => {
       this.sessionEnded$.next();
     });
+
+    this.connection.on('SceneActivated',   (scene: SessionScene)      => this.sceneActivated$.next(scene));
+    this.connection.on('SceneUpdated',     (scene: SessionScene)      => this.sceneUpdated$.next(scene));
+    this.connection.on('TokenAdded',       (token: MapToken)          => this.tokenAdded$.next(token));
+    this.connection.on('TokenMoved',       (ev: TokenMovedEvent)      => this.tokenMoved$.next(ev));
+    this.connection.on('TokenUpdated',     (token: MapToken)          => this.tokenUpdated$.next(token));
+    this.connection.on('TokenRemoved',     (tokenId: string)          => this.tokenRemoved$.next(tokenId));
+    this.connection.on('ResourceUpdated',  (r: CharacterResource)     => this.resourceUpdated$.next(r));
 
     this.connection.onreconnected(async () => {
       if (this.currentSessionId) {

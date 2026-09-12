@@ -108,6 +108,17 @@
     </section>
   }
 
+  @if (e.entityTypeName === 'Personaje') {
+    <mat-divider />
+    <section class="custom-fields">
+      <h3>Ficha</h3>
+      <app-character-sheet-view
+        [campaignId]="campaignId()"
+        [entityId]="e.id"
+      />
+    </section>
+  }
+
   <mat-divider />
 
   <!-- Relationships -->

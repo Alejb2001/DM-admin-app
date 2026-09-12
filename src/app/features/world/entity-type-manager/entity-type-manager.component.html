@@ -146,6 +146,13 @@
                     @if (field.isRequired) { <span class="required-badge">Requerido</span> }
                   </div>
                   @if (!type.isSystemDefault) {
+                    @if (field.fieldType === 'number') {
+                      <button mat-icon-button (click)="toggleRollFormula(field)"
+                              [matTooltip]="field.isRollFormula ? 'Quitar dado' : 'Marcar como dado'"
+                              [class.active-dice]="field.isRollFormula">
+                        <mat-icon>casino</mat-icon>
+                      </button>
+                    }
                     <button mat-icon-button color="warn" (click)="deleteField(field)" matTooltip="Eliminar campo">
                       <mat-icon>delete</mat-icon>
                     </button>
@@ -196,4 +203,5 @@
   .color-picker { width: 40px; height: 40px; border: none; border-radius: 6px; cursor: pointer; padding: 2px; }
   .form-actions { display: flex; gap: 8px; }
   .required-check { display: flex; align-items: center; }
+  .active-dice { color: #7b1fa2; }
 </style>

@@ -184,6 +184,21 @@ export class EntityTypeManagerComponent implements OnInit {
     });
   }
 
+  toggleRollFormula(field: EntityTypeField) {
+    const type = this.selectedType();
+    if (!type) return;
+    this.worldService.updateField(this.data.campaignId, type.id, field.id, {
+      name: field.name,
+      fieldType: field.fieldType,
+      isRequired: field.isRequired,
+      sortOrder: field.sortOrder,
+      isRollFormula: !field.isRollFormula,
+    }).subscribe({
+      next: () => this.load(),
+      error: err => this.snack.open(err.error?.error ?? 'Error al actualizar campo', 'Ok'),
+    });
+  }
+
   getFieldIcon(fieldType: string): string {
     const icons: Record<string, string> = {
       text: 'text_fields', number: 'numbers', date: 'calendar_today',

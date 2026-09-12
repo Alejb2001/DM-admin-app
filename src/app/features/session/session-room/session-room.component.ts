@@ -2,17 +2,20 @@ import { Component, inject, signal, OnInit, OnDestroy, input } from '@angular/co
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatButtonModule } from '@angular/material/button';
 import { SessionService } from '../services/session.service';
 import { SessionSignalRService } from '../services/session-signalr.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { GameSession, ChatMessage, SessionPresenceEntry } from '../models/session.models';
 import { SessionHeaderComponent } from '../session-header/session-header.component';
 import { ChatPanelComponent } from '../chat-panel/chat-panel.component';
+import { MapCanvasComponent } from '../map-canvas/map-canvas.component';
+import { CharacterSheetPanelComponent } from '../character-sheet-panel/character-sheet-panel.component';
 
 @Component({
   selector: 'app-session-room',
   standalone: true,
-  imports: [MatProgressSpinnerModule, SessionHeaderComponent, ChatPanelComponent],
+  imports: [MatProgressSpinnerModule, MatButtonModule, SessionHeaderComponent, ChatPanelComponent, MapCanvasComponent, CharacterSheetPanelComponent],
   template: `
     @if (loading()) {
       <div class="loading-overlay"><mat-spinner /></div>
@@ -26,19 +29,31 @@ import { ChatPanelComponent } from '../chat-panel/chat-panel.component';
         />
         <div class="session-body">
           <div class="main-area">
-            <div class="map-placeholder">
-              <span class="placeholder-icon">🗺️</span>
-              <p>El mapa virtual estará disponible en el Subsistema 2.</p>
-              <p class="placeholder-sub">Por ahora usa el chat para narrar la sesión.</p>
-            </div>
-          </div>
-          <div class="chat-area">
-            <app-chat-panel
+            <app-map-canvas
               [campaignId]="id()"
               [sessionId]="sid()"
               [isDm]="isDm"
-              [initialMessages]="initialMessages()"
+              [currentUserId]="currentUserId"
             />
+          </div>
+          <div class="chat-area">
+            <div class="panel-tabs">
+              <button [class.active]="rightTab() === 'chat'" (click)="rightTab.set('chat')">Chat</button>
+              <button [class.active]="rightTab() === 'fichas'" (click)="rightTab.set('fichas')">Fichas</button>
+            </div>
+            @if (rightTab() === 'chat') {
+              <app-chat-panel
+                [campaignId]="id()"
+                [sessionId]="sid()"
+                [isDm]="isDm"
+                [initialMessages]="initialMessages()"
+              />
+            } @else {
+              <app-character-sheet-panel
+                [campaignId]="id()"
+                [sessionId]="sid()"
+              />
+            }
           </div>
         </div>
       </div>
@@ -78,17 +93,8 @@ import { ChatPanelComponent } from '../chat-panel/chat-panel.component';
     .main-area {
       flex: 65;
       display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #1a1a2e;
-      color: #616161;
+      overflow: hidden;
     }
-    .map-placeholder {
-      text-align: center;
-      color: #546e7a;
-    }
-    .placeholder-icon { font-size: 48px; display: block; margin-bottom: 16px; }
-    .placeholder-sub { font-size: 13px; color: #455a64; }
     .chat-area {
       flex: 35;
       border-left: 1px solid #37474f;
@@ -96,6 +102,27 @@ import { ChatPanelComponent } from '../chat-panel/chat-panel.component';
       flex-direction: column;
       background: white;
       overflow: hidden;
+    }
+    .panel-tabs {
+      display: flex;
+      flex-shrink: 0;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    .panel-tabs button {
+      flex: 1;
+      padding: 8px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      color: #757575;
+      border-bottom: 2px solid transparent;
+      transition: color .15s, border-color .15s;
+    }
+    .panel-tabs button.active {
+      color: #7b1fa2;
+      border-bottom-color: #7b1fa2;
     }
   `],
 })
@@ -113,6 +140,8 @@ export class SessionRoomComponent implements OnInit, OnDestroy {
   presence = signal<SessionPresenceEntry[]>([]);
   loading = signal(true);
   isDm = false;
+  currentUserId = '';
+  rightTab = signal<'chat' | 'fichas'>('chat');
 
   private subs: Subscription[] = [];
 
@@ -125,6 +154,7 @@ export class SessionRoomComponent implements OnInit, OnDestroy {
         const user = this.auth.currentUser();
         if (user) {
           this.isDm = detail.session.createdById === user.id;
+          this.currentUserId = user.id;
         }
 
         this.loading.set(false);

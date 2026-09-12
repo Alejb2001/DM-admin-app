@@ -23,6 +23,7 @@ import { CampaignService } from '../../campaigns/services/campaign.service';
 import { CampaignRole } from '../../campaigns/models/campaign.models';
 import { SignalRService } from '../../../core/services/signalr.service';
 import { AddRelationshipDialogComponent } from '../add-relationship-dialog/add-relationship-dialog.component';
+import { CharacterSheetViewComponent } from '../character-sheet/character-sheet-view.component';
 
 @Component({
   selector: 'app-entity-detail',
@@ -31,7 +32,7 @@ import { AddRelationshipDialogComponent } from '../add-relationship-dialog/add-r
     RouterLink, FormsModule, DatePipe, MatCardModule, MatButtonModule, MatIconModule,
     MatChipsModule, MatProgressSpinnerModule, MatDividerModule,
     MatSlideToggleModule, MatFormFieldModule, MatInputModule, MatTooltipModule,
-    MatCheckboxModule,
+    MatCheckboxModule, CharacterSheetViewComponent,
   ],
   templateUrl: './entity-detail.component.html',
 })

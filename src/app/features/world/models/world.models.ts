@@ -4,6 +4,7 @@ export interface EntityTypeField {
   fieldType: 'text' | 'number' | 'date' | 'boolean' | 'reference' | 'richtext' | 'url';
   isRequired: boolean;
   sortOrder: number;
+  isRollFormula: boolean;
 }
 
 export interface EntityType {
