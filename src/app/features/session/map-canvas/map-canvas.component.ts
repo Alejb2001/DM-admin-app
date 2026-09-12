@@ -67,6 +67,7 @@ import { ConditionPickerComponent } from '../token-conditions/condition-picker.c
             [isDm]="isDm()"
             (tokenDropped)="onTokenDropped($event)"
             (fogZoneDrawn)="onFogZoneDrawn($event)"
+            (tokenSelected)="selectedToken.set($event)"
           />
           @if (selectedToken() && isDm()) {
             <div class="condition-overlay">

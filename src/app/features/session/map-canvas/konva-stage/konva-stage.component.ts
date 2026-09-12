@@ -40,8 +40,9 @@ export class KonvaStageComponent implements AfterViewInit, OnDestroy, OnChanges 
   @Input() currentUserId = '';
   @Input() isDm = false;
 
-  @Output() tokenDropped = new EventEmitter<TokenDrop>();
-  @Output() fogZoneDrawn = new EventEmitter<{ shape: string; x: number; y: number; width?: number; height?: number; radius?: number }>();
+  @Output() tokenDropped  = new EventEmitter<TokenDrop>();
+  @Output() fogZoneDrawn  = new EventEmitter<{ shape: string; x: number; y: number; width?: number; height?: number; radius?: number }>();
+  @Output() tokenSelected = new EventEmitter<MapToken | null>();
 
   private _scene: SessionScene | null = null;
   private _tokens: MapToken[] = [];
@@ -80,6 +81,11 @@ export class KonvaStageComponent implements AfterViewInit, OnDestroy, OnChanges 
     this.stage.add(this.fogLayer);
 
     this.setupFogDrawing();
+
+    // Click on empty stage deselects token
+    this.stage.on('click', (e) => {
+      if (e.target === this.stage) this.tokenSelected.emit(null);
+    });
 
     this.resizeObserver = new ResizeObserver(() => this.onResize());
     this.resizeObserver.observe(el);
@@ -428,6 +434,14 @@ export class KonvaStageComponent implements AfterViewInit, OnDestroy, OnChanges 
         }));
       });
     }
+
+    // Right-click or Ctrl+click selects token (DM only)
+    group.on('contextmenu click', (e) => {
+      if (!this.isDm) return;
+      if (e.type === 'click' && !e.evt.ctrlKey) return;
+      e.evt.preventDefault();
+      this.tokenSelected.emit(token);
+    });
 
     if (canDrag) {
       group.on('dragend', () => {
