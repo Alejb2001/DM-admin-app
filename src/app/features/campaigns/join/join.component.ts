@@ -151,14 +151,25 @@ export class JoinComponent implements OnInit {
     if (!this.canSubmit()) return;
     this.error.set(null);
 
-    const auth$ = this.mode() === 'register'
-      ? this.auth.register({ email: this.email, password: this.password, displayName: this.displayName })
-      : this.auth.login({ email: this.email, password: this.password });
-
-    auth$.subscribe({
-      next: () => this.joinDirectly(),
-      error: err => this.error.set(err.error?.message ?? 'Error al autenticar. Revisa tus datos.'),
-    });
+    if (this.mode() === 'register') {
+      this.auth.register({ email: this.email, password: this.password, displayName: this.displayName }).subscribe({
+        next: () => this.router.navigate(['/auth/verify-email-sent']),
+        error: (err: any) => this.error.set(
+          err.status === 409 ? 'Ese email ya está registrado.' : 'Error al registrar. Intenta de nuevo.'
+        ),
+      });
+    } else {
+      this.auth.login({ email: this.email, password: this.password }).subscribe({
+        next: () => this.joinDirectly(),
+        error: (err: any) => {
+          if (err.status === 403) {
+            this.error.set('Debes verificar tu correo electrónico antes de entrar.');
+          } else {
+            this.error.set('Email o contraseña incorrectos.');
+          }
+        },
+      });
+    }
   }
 
   private joinDirectly() {

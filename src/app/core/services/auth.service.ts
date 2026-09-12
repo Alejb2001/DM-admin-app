@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { tap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
-import { AuthResponse, LoginRequest, RegisterRequest, User } from '../models/auth.models';
+import { AuthResponse, LoginRequest, RegisterRequest, RegisterResponse, User } from '../models/auth.models';
 
 const ACCESS_TOKEN_KEY = 'access_token';
 const REFRESH_TOKEN_KEY = 'refresh_token';
@@ -14,9 +14,11 @@ export class AuthService {
   private router = inject(Router);
 
   private _currentUser = signal<User | null>(null);
+  private _pendingVerificationEmail = signal<string | null>(null);
 
   readonly currentUser = this._currentUser.asReadonly();
   readonly isAuthenticated = computed(() => this._currentUser() !== null);
+  readonly pendingVerificationEmail = this._pendingVerificationEmail.asReadonly();
 
   constructor() {
     const token = this.getAccessToken();
@@ -26,8 +28,8 @@ export class AuthService {
   }
 
   register(data: RegisterRequest) {
-    return this.http.post<AuthResponse>(`${environment.apiUrl}/auth/register`, data).pipe(
-      tap(res => this.handleAuthResponse(res))
+    return this.http.post<RegisterResponse>(`${environment.apiUrl}/auth/register`, data).pipe(
+      tap(res => this._pendingVerificationEmail.set(res.email))
     );
   }
 
@@ -35,6 +37,18 @@ export class AuthService {
     return this.http.post<AuthResponse>(`${environment.apiUrl}/auth/login`, data).pipe(
       tap(res => this.handleAuthResponse(res))
     );
+  }
+
+  verifyEmail(token: string) {
+    return this.http.get<AuthResponse>(`${environment.apiUrl}/auth/verify-email`, {
+      params: { token },
+    }).pipe(
+      tap(res => this.handleAuthResponse(res))
+    );
+  }
+
+  resendVerification(email: string) {
+    return this.http.post(`${environment.apiUrl}/auth/resend-verification`, { email });
   }
 
   refresh() {

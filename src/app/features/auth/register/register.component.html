@@ -28,12 +28,35 @@
 
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Contraseña</mat-label>
-          <input matInput type="password" formControlName="password" autocomplete="new-password" />
+          <input matInput [type]="hidePassword() ? 'password' : 'text'"
+                 formControlName="password" autocomplete="new-password" />
+          <button mat-icon-button matSuffix type="button"
+                  (click)="hidePassword.set(!hidePassword())"
+                  [attr.aria-label]="hidePassword() ? 'Mostrar contraseña' : 'Ocultar contraseña'">
+            <mat-icon>{{ hidePassword() ? 'visibility' : 'visibility_off' }}</mat-icon>
+          </button>
           @if (form.get('password')?.hasError('required')) {
             <mat-error>La contraseña es requerida</mat-error>
           }
           @if (form.get('password')?.hasError('minlength')) {
             <mat-error>Mínimo 8 caracteres</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Confirmar contraseña</mat-label>
+          <input matInput [type]="hideConfirmPassword() ? 'password' : 'text'"
+                 formControlName="confirmPassword" autocomplete="new-password" />
+          <button mat-icon-button matSuffix type="button"
+                  (click)="hideConfirmPassword.set(!hideConfirmPassword())"
+                  [attr.aria-label]="hideConfirmPassword() ? 'Mostrar contraseña' : 'Ocultar contraseña'">
+            <mat-icon>{{ hideConfirmPassword() ? 'visibility' : 'visibility_off' }}</mat-icon>
+          </button>
+          @if (form.get('confirmPassword')?.hasError('required')) {
+            <mat-error>Confirma tu contraseña</mat-error>
+          }
+          @if (form.hasError('passwordsMismatch') && !form.get('confirmPassword')?.hasError('required')) {
+            <mat-error>Las contraseñas no coinciden</mat-error>
           }
         </mat-form-field>
 
