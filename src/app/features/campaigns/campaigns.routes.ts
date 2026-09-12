@@ -13,4 +13,12 @@ export const CAMPAIGNS_ROUTES: Routes = [
     path: ':id/world',
     loadChildren: () => import('../world/world.routes').then(m => m.WORLD_ROUTES),
   },
+  {
+    path: ':id/sessions',
+    loadChildren: () => import('../session/session.routes').then(m => m.SESSION_ROUTES),
+  },
+  {
+    path: ':id/session',
+    loadChildren: () => import('../session/session.routes').then(m => m.SESSION_ROUTES),
+  },
 ];

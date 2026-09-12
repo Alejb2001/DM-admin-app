@@ -1,5 +1,5 @@
 import { Component, inject, signal, OnInit, OnDestroy, input } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { RouterLink, Router } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { MatCardModule } from '@angular/material/card';
@@ -18,6 +18,9 @@ import { CampaignDetail, Member } from '../models/campaign.models';
 import { AuthService } from '../../../core/services/auth.service';
 import { SignalRService, PresenceEntry } from '../../../core/services/signalr.service';
 import { CampaignInviteDialogComponent } from '../campaign-invite-dialog/campaign-invite-dialog.component';
+import { SessionService } from '../../session/services/session.service';
+import { StartSessionDialogComponent } from '../../session/start-session-dialog/start-session-dialog.component';
+import { GameSession } from '../../session/models/session.models';
 
 @Component({
   selector: 'app-campaign-detail',
@@ -34,7 +37,9 @@ export class CampaignDetailComponent implements OnInit, OnDestroy {
 
   private service = inject(CampaignService);
   private worldService = inject(WorldService);
+  private sessionService = inject(SessionService);
   private dialog = inject(MatDialog);
+  private router = inject(Router);
   private signalR = inject(SignalRService);
   auth = inject(AuthService);
 
@@ -42,6 +47,7 @@ export class CampaignDetailComponent implements OnInit, OnDestroy {
   loading = signal(true);
   exporting = signal(false);
   presence = signal<PresenceEntry[]>([]);
+  activeSession = signal<GameSession | null>(null);
   displayedColumns = ['avatar', 'name', 'role', 'joined', 'actions'];
 
   private subs: Subscription[] = [];
@@ -65,9 +71,35 @@ export class CampaignDetailComponent implements OnInit, OnDestroy {
         this.campaign.set(data);
         this.loading.set(false);
         this.joinHub(data);
+        this.loadActiveSession();
       },
       error: () => this.loading.set(false),
     });
+  }
+
+  private loadActiveSession() {
+    this.sessionService.getSessions(this.id()).subscribe({
+      next: sessions => {
+        this.activeSession.set(sessions.find(s => s.status === 'active') ?? null);
+      },
+    });
+  }
+
+  openStartSession() {
+    const ref = this.dialog.open(StartSessionDialogComponent, { width: '440px' });
+    ref.afterClosed().subscribe((name: string | undefined) => {
+      if (!name) return;
+      this.sessionService.createSession(this.id(), name).subscribe({
+        next: session => {
+          this.router.navigate(['/campaigns', this.id(), 'session', session.id]);
+        },
+      });
+    });
+  }
+
+  joinActiveSession() {
+    const s = this.activeSession();
+    if (s) this.router.navigate(['/campaigns', this.id(), 'session', s.id]);
   }
 
   private joinHub(campaign: CampaignDetail) {
