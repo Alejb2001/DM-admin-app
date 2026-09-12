@@ -6,6 +6,12 @@ export interface SessionScene {
   gridSize: number;
   gridEnabled: boolean;
   isActive: boolean;
+  fogEnabled: boolean;
+}
+
+export interface TokenConditionInfo {
+  id: string;
+  condition: string;
 }
 
 export interface MapToken {
@@ -21,6 +27,7 @@ export interface MapToken {
   height: number;
   isVisible: boolean;
   controlledBy: string | null;
+  conditions: TokenConditionInfo[];
 }
 
 export interface TokenMovedEvent {

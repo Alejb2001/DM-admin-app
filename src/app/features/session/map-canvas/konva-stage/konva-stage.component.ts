@@ -4,6 +4,7 @@ import {
 } from '@angular/core';
 import Konva from 'konva';
 import { SessionScene, MapToken } from '../../models/map.models';
+import { FogZone } from '../../models/vtt-advanced.models';
 
 interface TokenDrop {
   tokenId: string;
@@ -32,20 +33,33 @@ export class KonvaStageComponent implements AfterViewInit, OnDestroy, OnChanges 
     this._tokens = value;
     if (this.stage) this.syncTokens(value);
   }
+  @Input() set fogZones(value: FogZone[]) {
+    this._fogZones = value;
+    if (this.stage) this.renderFog();
+  }
   @Input() currentUserId = '';
   @Input() isDm = false;
 
   @Output() tokenDropped = new EventEmitter<TokenDrop>();
+  @Output() fogZoneDrawn = new EventEmitter<{ shape: string; x: number; y: number; width?: number; height?: number; radius?: number }>();
 
   private _scene: SessionScene | null = null;
   private _tokens: MapToken[] = [];
+  private _fogZones: FogZone[] = [];
 
   private stage: Konva.Stage | null = null;
   private backgroundLayer!: Konva.Layer;
   private gridLayer!: Konva.Layer;
   private tokenLayer!: Konva.Layer;
+  private fogLayer!: Konva.Layer;
   private tokenMap = new Map<string, Konva.Group>();
   private resizeObserver!: ResizeObserver;
+
+  // Fog drawing state
+  fogDrawingTool: 'rect' | 'circle' | null = null;
+  private fogDrawing = false;
+  private fogStartPos: { x: number; y: number } | null = null;
+  private fogPreview: Konva.Shape | null = null;
 
   ngAfterViewInit() {
     const el = this.containerRef.nativeElement;
@@ -58,10 +72,14 @@ export class KonvaStageComponent implements AfterViewInit, OnDestroy, OnChanges 
     this.backgroundLayer = new Konva.Layer();
     this.gridLayer = new Konva.Layer();
     this.tokenLayer = new Konva.Layer();
+    this.fogLayer = new Konva.Layer();
 
     this.stage.add(this.backgroundLayer);
     this.stage.add(this.gridLayer);
     this.stage.add(this.tokenLayer);
+    this.stage.add(this.fogLayer);
+
+    this.setupFogDrawing();
 
     this.resizeObserver = new ResizeObserver(() => this.onResize());
     this.resizeObserver.observe(el);
@@ -69,6 +87,7 @@ export class KonvaStageComponent implements AfterViewInit, OnDestroy, OnChanges 
     // Apply pending inputs
     if (this._scene) this.applyScene(this._scene);
     this.syncTokens(this._tokens);
+    this.renderFog();
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -107,6 +126,136 @@ export class KonvaStageComponent implements AfterViewInit, OnDestroy, OnChanges 
   removeToken(tokenId: string) {
     this.removeTokenFromStage(tokenId);
     this.tokenLayer.draw();
+  }
+
+  updateTokenConditions(tokenId: string, conditions: { id: string; condition: string }[]) {
+    const token = this._tokens.find(t => t.id === tokenId);
+    if (token) {
+      token.conditions = conditions;
+      this.addOrUpdateToken(token);
+    }
+  }
+
+  // ── Fog ─────────────────────────────────────────────────────────────────────
+
+  renderFog() {
+    if (!this.fogLayer || !this._scene) return;
+
+    this.fogLayer.destroyChildren();
+
+    if (!this._scene.fogEnabled) {
+      this.fogLayer.draw();
+      return;
+    }
+
+    const w = this.stage!.width();
+    const h = this.stage!.height();
+    const opacity = this.isDm ? 0.5 : 1;
+
+    // Full fog cover
+    const fogRect = new Konva.Rect({
+      x: 0, y: 0, width: w, height: h,
+      fill: '#000000',
+      opacity,
+    });
+    this.fogLayer.add(fogRect);
+
+    // Revealed zones use destination-out compositing
+    for (const zone of this._fogZones) {
+      if (zone.shape === 'circle' && zone.radius != null) {
+        const hole = new Konva.Circle({
+          x: zone.x, y: zone.y,
+          radius: zone.radius,
+          fill: 'rgba(0,0,0,1)',
+          globalCompositeOperation: 'destination-out' as any,
+        });
+        this.fogLayer.add(hole);
+      } else if (zone.width != null && zone.height != null) {
+        const hole = new Konva.Rect({
+          x: zone.x, y: zone.y,
+          width: zone.width, height: zone.height,
+          fill: 'rgba(0,0,0,1)',
+          globalCompositeOperation: 'destination-out' as any,
+        });
+        this.fogLayer.add(hole);
+      }
+    }
+
+    this.fogLayer.draw();
+  }
+
+  private setupFogDrawing() {
+    if (!this.stage) return;
+
+    this.stage.on('mousedown touchstart', (e) => {
+      if (!this.fogDrawingTool || !this.isDm) return;
+      this.fogDrawing = true;
+      const pos = this.stage!.getPointerPosition()!;
+      this.fogStartPos = { x: pos.x, y: pos.y };
+    });
+
+    this.stage.on('mousemove touchmove', () => {
+      if (!this.fogDrawing || !this.fogStartPos) return;
+      const pos = this.stage!.getPointerPosition()!;
+
+      if (this.fogPreview) {
+        this.fogPreview.destroy();
+        this.fogPreview = null;
+      }
+
+      if (this.fogDrawingTool === 'rect') {
+        const x = Math.min(pos.x, this.fogStartPos.x);
+        const y = Math.min(pos.y, this.fogStartPos.y);
+        const w = Math.abs(pos.x - this.fogStartPos.x);
+        const h = Math.abs(pos.y - this.fogStartPos.y);
+        this.fogPreview = new Konva.Rect({
+          x, y, width: w, height: h,
+          stroke: '#ffeb3b', strokeWidth: 2, dash: [6, 3],
+        });
+      } else {
+        const dx = pos.x - this.fogStartPos.x;
+        const dy = pos.y - this.fogStartPos.y;
+        const radius = Math.sqrt(dx * dx + dy * dy);
+        this.fogPreview = new Konva.Circle({
+          x: this.fogStartPos.x, y: this.fogStartPos.y,
+          radius,
+          stroke: '#ffeb3b', strokeWidth: 2, dash: [6, 3],
+        });
+      }
+      this.fogLayer.add(this.fogPreview);
+      this.fogLayer.draw();
+    });
+
+    this.stage.on('mouseup touchend', () => {
+      if (!this.fogDrawing || !this.fogStartPos) return;
+      const pos = this.stage!.getPointerPosition()!;
+      this.fogDrawing = false;
+
+      if (this.fogPreview) {
+        this.fogPreview.destroy();
+        this.fogPreview = null;
+        this.fogLayer.draw();
+      }
+
+      if (this.fogDrawingTool === 'rect') {
+        const x = Math.min(pos.x, this.fogStartPos.x);
+        const y = Math.min(pos.y, this.fogStartPos.y);
+        const width = Math.abs(pos.x - this.fogStartPos.x);
+        const height = Math.abs(pos.y - this.fogStartPos.y);
+        if (width > 5 && height > 5) {
+          this.fogZoneDrawn.emit({ shape: 'rect', x, y, width, height });
+        }
+      } else {
+        const dx = pos.x - this.fogStartPos.x;
+        const dy = pos.y - this.fogStartPos.y;
+        const radius = Math.sqrt(dx * dx + dy * dy);
+        if (radius > 5) {
+          this.fogZoneDrawn.emit({ shape: 'circle', x: this.fogStartPos.x, y: this.fogStartPos.y, radius });
+        }
+      }
+
+      this.fogStartPos = null;
+    });
   }
 
   // ── Scene ──────────────────────────────────────────────────────────────────
@@ -254,6 +403,32 @@ export class KonvaStageComponent implements AfterViewInit, OnDestroy, OnChanges 
       shadowOpacity: 0.8,
     }));
 
+    // Condition badges
+    if (token.conditions?.length) {
+      const badgeSize = Math.max(10, tokenPx * 0.25);
+      token.conditions.forEach((cond, i) => {
+        const badgeX = i * (badgeSize + 2);
+        group.add(new Konva.Circle({
+          x: badgeX + badgeSize / 2,
+          y: tokenPx + 16 + badgeSize / 2,
+          radius: badgeSize / 2,
+          fill: this.conditionColor(cond.condition),
+          stroke: '#fff',
+          strokeWidth: 1,
+        }));
+        group.add(new Konva.Text({
+          x: badgeX,
+          y: tokenPx + 16 + badgeSize / 2 - 5,
+          width: badgeSize,
+          text: cond.condition.slice(0, 1).toUpperCase(),
+          fontSize: Math.max(8, badgeSize * 0.6),
+          fill: 'white',
+          align: 'center',
+          fontStyle: 'bold',
+        }));
+      });
+    }
+
     if (canDrag) {
       group.on('dragend', () => {
         const pos = group.position();
@@ -283,6 +458,14 @@ export class KonvaStageComponent implements AfterViewInit, OnDestroy, OnChanges 
     return label.split(' ').slice(0, 2).map(w => w[0]?.toUpperCase() ?? '').join('');
   }
 
+  private conditionColor(condition: string): string {
+    const map: Record<string, string> = {
+      envenenado: '#4caf50', aturdido: '#ff9800', paralizado: '#9c27b0',
+      asustado: '#f44336', cegado: '#607d8b', inconsciente: '#212121',
+    };
+    return map[condition.toLowerCase()] ?? '#e91e63';
+  }
+
   // ── Resize ─────────────────────────────────────────────────────────────────
 
   private onResize() {
@@ -296,5 +479,6 @@ export class KonvaStageComponent implements AfterViewInit, OnDestroy, OnChanges 
     } else if (this._scene?.gridEnabled) {
       this.drawGrid(this._scene.gridSize);
     }
+    this.renderFog();
   }
 }

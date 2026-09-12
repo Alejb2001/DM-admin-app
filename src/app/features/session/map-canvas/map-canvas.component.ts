@@ -5,15 +5,19 @@ import {
 import { Subscription } from 'rxjs';
 import { SceneService } from '../services/scene.service';
 import { SessionSignalRService } from '../services/session-signalr.service';
+import { VttAdvancedService } from '../services/vtt-advanced.service';
 import { SessionScene, MapToken } from '../models/map.models';
+import { FogZone } from '../models/vtt-advanced.models';
 import { KonvaStageComponent } from './konva-stage/konva-stage.component';
 import { SceneSelectorComponent } from './scene-selector/scene-selector.component';
 import { TokenPanelComponent } from './token-panel/token-panel.component';
+import { FogToolbarComponent } from '../fog-of-war/fog-toolbar.component';
+import { ConditionPickerComponent } from '../token-conditions/condition-picker.component';
 
 @Component({
   selector: 'app-map-canvas',
   standalone: true,
-  imports: [KonvaStageComponent, SceneSelectorComponent, TokenPanelComponent],
+  imports: [KonvaStageComponent, SceneSelectorComponent, TokenPanelComponent, FogToolbarComponent, ConditionPickerComponent],
   template: `
     <div class="map-layout">
       @if (isDm()) {
@@ -39,6 +43,17 @@ import { TokenPanelComponent } from './token-panel/token-panel.component';
               (tokenDeleted)="onTokenDeleted($event)"
             />
           </div>
+          @if (activeScene()) {
+            <div class="fog-panel">
+              <app-fog-toolbar
+                [fogEnabled]="activeScene()!.fogEnabled"
+                [activeTool]="fogTool()"
+                (toggleFog)="onToggleFog()"
+                (setTool)="onSetFogTool($event)"
+                (clearFog)="onClearFog()"
+              />
+            </div>
+          }
         </div>
       }
       <div class="canvas-area">
@@ -47,10 +62,21 @@ import { TokenPanelComponent } from './token-panel/token-panel.component';
             #stage
             [scene]="activeScene()"
             [tokens]="tokens()"
+            [fogZones]="fogZones()"
             [currentUserId]="currentUserId()"
             [isDm]="isDm()"
             (tokenDropped)="onTokenDropped($event)"
+            (fogZoneDrawn)="onFogZoneDrawn($event)"
           />
+          @if (selectedToken() && isDm()) {
+            <div class="condition-overlay">
+              <app-condition-picker
+                [activeConditions]="selectedToken()!.conditions"
+                (addCond)="onAddCondition($event)"
+                (removeCond)="onRemoveCondition($event)"
+              />
+            </div>
+          }
         } @else {
           <div class="no-scene">
             @if (isDm()) {
@@ -75,7 +101,14 @@ import { TokenPanelComponent } from './token-panel/token-panel.component';
     }
     .dm-panel-top { flex: 1; overflow: hidden; display: flex; flex-direction: column; border-bottom: 1px solid rgba(255,255,255,0.1); }
     .dm-panel-bottom { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
-    .canvas-area { flex: 1; overflow: hidden; background: #0d0d1a; }
+    .fog-panel { border-top: 1px solid rgba(255,255,255,0.1); flex-shrink: 0; }
+    .canvas-area { flex: 1; overflow: hidden; background: #0d0d1a; position: relative; }
+    .condition-overlay {
+      position: absolute; bottom: 12px; right: 12px;
+      border-radius: 8px; overflow: hidden;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+      z-index: 10;
+    }
     .no-scene {
       height: 100%; display: flex; align-items: center; justify-content: center;
       color: #546e7a; text-align: center; padding: 24px;
@@ -91,11 +124,15 @@ export class MapCanvasComponent implements OnInit, OnDestroy {
 
   @ViewChild('stage') stageRef?: KonvaStageComponent;
 
-  scenes      = signal<SessionScene[]>([]);
-  tokens      = signal<MapToken[]>([]);
-  activeScene = computed(() => this.scenes().find(s => s.isActive) ?? null);
+  scenes       = signal<SessionScene[]>([]);
+  tokens       = signal<MapToken[]>([]);
+  fogZones     = signal<FogZone[]>([]);
+  activeScene  = computed(() => this.scenes().find(s => s.isActive) ?? null);
+  selectedToken = signal<MapToken | null>(null);
+  fogTool      = signal<'rect' | 'circle' | null>(null);
 
   private sceneService = inject(SceneService);
+  private vtt          = inject(VttAdvancedService);
   private signalR      = inject(SessionSignalRService);
   private subs: Subscription[] = [];
 
@@ -114,13 +151,21 @@ export class MapCanvasComponent implements OnInit, OnDestroy {
     this.sceneService.getScenes(this.campaignId(), this.sessionId()).subscribe(scenes => {
       this.scenes.set(scenes);
       const active = scenes.find(s => s.isActive);
-      if (active) this.loadTokens(active.id);
+      if (active) {
+        this.loadTokens(active.id);
+        this.loadFogZones(active.id);
+      }
     });
   }
 
   private loadTokens(sceneId: string) {
     this.sceneService.getTokens(this.campaignId(), this.sessionId(), sceneId)
       .subscribe(tokens => this.tokens.set(tokens));
+  }
+
+  private loadFogZones(sceneId: string) {
+    this.vtt.getFogZones(this.campaignId(), this.sessionId(), sceneId)
+      .subscribe(zones => this.fogZones.set(zones));
   }
 
   // ── SignalR ────────────────────────────────────────────────────────────────
@@ -158,6 +203,41 @@ export class MapCanvasComponent implements OnInit, OnDestroy {
         this.tokens.update(list => list.filter(t => t.id !== tokenId));
         this.stageRef?.removeToken(tokenId);
       }),
+
+      // Fog events
+      this.signalR.fogZoneAdded$.subscribe(zone => {
+        if (zone.sceneId === this.activeScene()?.id) {
+          this.fogZones.update(list => [...list, zone]);
+          this.stageRef?.renderFog();
+        }
+      }),
+      this.signalR.fogZoneRemoved$.subscribe(zoneId => {
+        this.fogZones.update(list => list.filter(z => z.id !== zoneId));
+        this.stageRef?.renderFog();
+      }),
+      this.signalR.fogCleared$.subscribe(sceneId => {
+        if (sceneId === this.activeScene()?.id) {
+          this.fogZones.set([]);
+          this.stageRef?.renderFog();
+        }
+      }),
+      this.signalR.fogToggled$.subscribe(ev => {
+        this.scenes.update(list => list.map(s =>
+          s.id === ev.sceneId ? { ...s, fogEnabled: ev.fogEnabled } : s));
+        this.stageRef?.renderFog();
+      }),
+
+      // Condition events
+      this.signalR.conditionAdded$.subscribe(ev => {
+        this.tokens.update(list => list.map(t =>
+          t.id === ev.tokenId ? { ...t, conditions: ev.conditions } : t));
+        this.stageRef?.updateTokenConditions(ev.tokenId, ev.conditions);
+      }),
+      this.signalR.conditionRemoved$.subscribe(ev => {
+        this.tokens.update(list => list.map(t =>
+          t.id === ev.tokenId ? { ...t, conditions: ev.conditions } : t));
+        this.stageRef?.updateTokenConditions(ev.tokenId, ev.conditions);
+      }),
     );
   }
 
@@ -179,6 +259,7 @@ export class MapCanvasComponent implements OnInit, OnDestroy {
   onSceneActivated(scene: SessionScene) {
     this.scenes.update(list => list.map(s => ({ ...s, isActive: s.id === scene.id })));
     this.loadTokens(scene.id);
+    this.loadFogZones(scene.id);
   }
 
   // ── Token events ───────────────────────────────────────────────────────────
@@ -190,6 +271,72 @@ export class MapCanvasComponent implements OnInit, OnDestroy {
   onTokenDeleted(tokenId: string) {
     this.tokens.update(list => list.filter(t => t.id !== tokenId));
   }
+
+  // ── Fog events ──────────────────────────────────────────────────────────────
+
+  onToggleFog() {
+    const scene = this.activeScene();
+    if (!scene) return;
+    this.vtt.toggleFog(this.campaignId(), this.sessionId(), scene.id, !scene.fogEnabled)
+      .subscribe(() => {
+        this.scenes.update(list => list.map(s =>
+          s.id === scene.id ? { ...s, fogEnabled: !scene.fogEnabled } : s));
+        this.stageRef?.renderFog();
+      });
+  }
+
+  onSetFogTool(tool: 'rect' | 'circle' | null) {
+    this.fogTool.set(tool);
+    if (this.stageRef) this.stageRef.fogDrawingTool = tool;
+  }
+
+  onClearFog() {
+    const scene = this.activeScene();
+    if (!scene) return;
+    this.vtt.clearFog(this.campaignId(), this.sessionId(), scene.id).subscribe(() => {
+      this.fogZones.set([]);
+      this.stageRef?.renderFog();
+    });
+  }
+
+  onFogZoneDrawn(event: { shape: string; x: number; y: number; width?: number; height?: number; radius?: number }) {
+    const scene = this.activeScene();
+    if (!scene) return;
+    this.vtt.addFogZone(this.campaignId(), this.sessionId(), scene.id, event).subscribe(zone => {
+      this.fogZones.update(list => [...list, zone]);
+      this.stageRef?.renderFog();
+    });
+  }
+
+  // ── Condition events ────────────────────────────────────────────────────────
+
+  onAddCondition(condition: string) {
+    const token = this.selectedToken();
+    const scene = this.activeScene();
+    if (!token || !scene) return;
+    this.vtt.addCondition(this.campaignId(), this.sessionId(), scene.id, token.id, condition)
+      .subscribe(conditions => {
+        const updated = { ...token, conditions };
+        this.tokens.update(list => list.map(t => t.id === token.id ? updated : t));
+        this.selectedToken.set(updated);
+        this.stageRef?.updateTokenConditions(token.id, conditions);
+      });
+  }
+
+  onRemoveCondition(conditionId: string) {
+    const token = this.selectedToken();
+    const scene = this.activeScene();
+    if (!token || !scene) return;
+    this.vtt.removeCondition(this.campaignId(), this.sessionId(), scene.id, token.id, conditionId)
+      .subscribe(conditions => {
+        const updated = { ...token, conditions };
+        this.tokens.update(list => list.map(t => t.id === token.id ? updated : t));
+        this.selectedToken.set(updated);
+        this.stageRef?.updateTokenConditions(token.id, conditions);
+      });
+  }
+
+  // ── Token events ───────────────────────────────────────────────────────────
 
   onTokenDropped(event: { tokenId: string; sceneId: string; x: number; y: number }) {
     const active = this.activeScene();

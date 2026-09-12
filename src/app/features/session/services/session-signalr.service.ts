@@ -6,6 +6,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { ChatMessage, SessionPresenceEntry } from '../models/session.models';
 import { SessionScene, MapToken, TokenMovedEvent } from '../models/map.models';
 import { CharacterResource } from '../../world/models/character-sheet.models';
+import { FogZone, FogToggledEvent, InitiativeEntry, ConditionChangedEvent } from '../models/vtt-advanced.models';
 
 @Injectable({ providedIn: 'root' })
 export class SessionSignalRService {
@@ -27,6 +28,18 @@ export class SessionSignalRService {
 
   // Sheet events
   readonly resourceUpdated$ = new Subject<CharacterResource>();
+
+  // Fog events
+  readonly fogZoneAdded$   = new Subject<FogZone>();
+  readonly fogZoneRemoved$ = new Subject<string>();
+  readonly fogCleared$     = new Subject<string>(); // sceneId
+  readonly fogToggled$     = new Subject<FogToggledEvent>();
+
+  // Combat events
+  readonly initiativeUpdated$     = new Subject<InitiativeEntry[]>();
+  readonly initiativeTurnChanged$ = new Subject<InitiativeEntry[]>();
+  readonly conditionAdded$        = new Subject<ConditionChangedEvent>();
+  readonly conditionRemoved$      = new Subject<ConditionChangedEvent>();
 
   async connect(): Promise<void> {
     if (this.connection?.state === signalR.HubConnectionState.Connected) return;
@@ -96,6 +109,16 @@ export class SessionSignalRService {
     this.connection.on('TokenUpdated',     (token: MapToken)          => this.tokenUpdated$.next(token));
     this.connection.on('TokenRemoved',     (tokenId: string)          => this.tokenRemoved$.next(tokenId));
     this.connection.on('ResourceUpdated',  (r: CharacterResource)     => this.resourceUpdated$.next(r));
+
+    this.connection.on('FogZoneAdded',   (z: FogZone)              => this.fogZoneAdded$.next(z));
+    this.connection.on('FogZoneRemoved', (id: string)              => this.fogZoneRemoved$.next(id));
+    this.connection.on('FogCleared',     (sceneId: string)         => this.fogCleared$.next(sceneId));
+    this.connection.on('FogToggled',     (ev: FogToggledEvent)     => this.fogToggled$.next(ev));
+
+    this.connection.on('InitiativeUpdated',     (list: InitiativeEntry[])  => this.initiativeUpdated$.next(list));
+    this.connection.on('InitiativeTurnChanged', (list: InitiativeEntry[])  => this.initiativeTurnChanged$.next(list));
+    this.connection.on('ConditionAdded',   (ev: ConditionChangedEvent) => this.conditionAdded$.next(ev));
+    this.connection.on('ConditionRemoved', (ev: ConditionChangedEvent) => this.conditionRemoved$.next(ev));
 
     this.connection.onreconnected(async () => {
       if (this.currentSessionId) {

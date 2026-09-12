@@ -11,11 +11,12 @@ import { SessionHeaderComponent } from '../session-header/session-header.compone
 import { ChatPanelComponent } from '../chat-panel/chat-panel.component';
 import { MapCanvasComponent } from '../map-canvas/map-canvas.component';
 import { CharacterSheetPanelComponent } from '../character-sheet-panel/character-sheet-panel.component';
+import { InitiativeTrackerComponent } from '../initiative-tracker/initiative-tracker.component';
 
 @Component({
   selector: 'app-session-room',
   standalone: true,
-  imports: [MatProgressSpinnerModule, MatButtonModule, SessionHeaderComponent, ChatPanelComponent, MapCanvasComponent, CharacterSheetPanelComponent],
+  imports: [MatProgressSpinnerModule, MatButtonModule, SessionHeaderComponent, ChatPanelComponent, MapCanvasComponent, CharacterSheetPanelComponent, InitiativeTrackerComponent],
   template: `
     @if (loading()) {
       <div class="loading-overlay"><mat-spinner /></div>
@@ -40,6 +41,7 @@ import { CharacterSheetPanelComponent } from '../character-sheet-panel/character
             <div class="panel-tabs">
               <button [class.active]="rightTab() === 'chat'" (click)="rightTab.set('chat')">Chat</button>
               <button [class.active]="rightTab() === 'fichas'" (click)="rightTab.set('fichas')">Fichas</button>
+              <button [class.active]="rightTab() === 'combate'" (click)="rightTab.set('combate')">Combate</button>
             </div>
             @if (rightTab() === 'chat') {
               <app-chat-panel
@@ -48,10 +50,17 @@ import { CharacterSheetPanelComponent } from '../character-sheet-panel/character
                 [isDm]="isDm"
                 [initialMessages]="initialMessages()"
               />
-            } @else {
+            } @else if (rightTab() === 'fichas') {
               <app-character-sheet-panel
                 [campaignId]="id()"
                 [sessionId]="sid()"
+              />
+            } @else {
+              <app-initiative-tracker
+                [campaignId]="id()"
+                [sessionId]="sid()"
+                [isDm]="isDm"
+                style="flex:1; overflow:hidden; background:#0d0d1a;"
               />
             }
           </div>
@@ -141,7 +150,7 @@ export class SessionRoomComponent implements OnInit, OnDestroy {
   loading = signal(true);
   isDm = false;
   currentUserId = '';
-  rightTab = signal<'chat' | 'fichas'>('chat');
+  rightTab = signal<'chat' | 'fichas' | 'combate'>('chat');
 
   private subs: Subscription[] = [];
 
