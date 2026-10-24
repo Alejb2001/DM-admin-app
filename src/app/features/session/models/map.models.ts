@@ -28,6 +28,17 @@ export interface MapToken {
   isVisible: boolean;
   controlledBy: string | null;
   conditions: TokenConditionInfo[];
+  bar1Value: number | null;
+  bar1Max: number | null;
+  bar1Color: string | null;
+  bar2Value: number | null;
+  bar2Max: number | null;
+  bar2Color: string | null;
+  auraRadius: number | null;
+  auraColor: string | null;
+  auraOpacity: number;
+  rotation: number;
+  isLocked: boolean;
 }
 
 export interface TokenMovedEvent {

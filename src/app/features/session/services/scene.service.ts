@@ -61,6 +61,10 @@ export class SceneService {
   updateToken(campaignId: string, sessionId: string, sceneId: string, tokenId: string, dto: {
     label: string; imageUrl?: string | null; color: string;
     width: number; height: number; isVisible: boolean; controlledBy?: string | null;
+    bar1Value?: number | null; bar1Max?: number | null; bar1Color?: string | null;
+    bar2Value?: number | null; bar2Max?: number | null; bar2Color?: string | null;
+    auraRadius?: number | null; auraColor?: string | null; auraOpacity: number;
+    rotation: number; isLocked: boolean;
   }): Observable<MapToken> {
     return this.http.put<MapToken>(
       `${this.base(campaignId, sessionId)}/${sceneId}/tokens/${tokenId}`, dto);

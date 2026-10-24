@@ -219,7 +219,7 @@ export class KonvaStageComponent implements AfterViewInit, OnDestroy, OnChanges 
     this.stage.container().style.cursor = enabled ? 'grab' : '';
     // Toggle token draggability
     for (const token of this._tokens) {
-      const canDrag = !enabled && (this.isDm || token.controlledBy === this.currentUserId);
+      const canDrag = !enabled && !token.isLocked && (this.isDm || token.controlledBy === this.currentUserId);
       this.tokenMap.get(token.id)?.draggable(canDrag);
     }
   }
@@ -493,30 +493,88 @@ export class KonvaStageComponent implements AfterViewInit, OnDestroy, OnChanges 
     if (!token.isVisible && !this.isDm) return;
 
     const gridSize = this._scene?.gridSize ?? 50;
-    const canDrag = !this._panMode && (this.isDm || token.controlledBy === this.currentUserId);
+    const isLocked = token.isLocked;
+    const canDrag = !this._panMode && !isLocked && (this.isDm || token.controlledBy === this.currentUserId);
     const tokenPx = token.width * gridSize;
 
     const group = new Konva.Group({
       x: token.x * gridSize,
       y: token.y * gridSize,
       draggable: canDrag,
+      rotation: token.rotation ?? 0,
       opacity: !token.isVisible && this.isDm ? 0.4 : 1,
       name: `token-${token.id}`,
     });
+
+    // Aura (drawn first so it sits behind everything)
+    if (token.auraRadius && token.auraRadius > 0) {
+      group.add(new Konva.Circle({
+        x: tokenPx / 2, y: tokenPx / 2,
+        radius: tokenPx / 2 + token.auraRadius * gridSize,
+        fill: token.auraColor ?? '#ffffff',
+        opacity: token.auraOpacity ?? 0.3,
+        listening: false,
+      }));
+    }
+
+    // Helper: overlays drawn on top of the token body
+    const addOverlays = () => {
+      // HP Bar 1 (closest to token)
+      if (token.bar1Value != null && token.bar1Max != null && token.bar1Max > 0) {
+        this.addHpBar(group, tokenPx, -9, token.bar1Value, token.bar1Max, token.bar1Color ?? '#4caf50');
+      }
+      // HP Bar 2
+      if (token.bar2Value != null && token.bar2Max != null && token.bar2Max > 0) {
+        this.addHpBar(group, tokenPx, -16, token.bar2Value, token.bar2Max, token.bar2Color ?? '#2196f3');
+      }
+      // Lock indicator
+      if (isLocked) {
+        group.add(new Konva.Text({
+          x: tokenPx - 14, y: tokenPx - 14,
+          text: '\uD83D\uDD12', fontSize: 12, listening: false,
+        }));
+      }
+      // Label below token
+      group.add(new Konva.Text({
+        x: -tokenPx * 0.5, y: tokenPx + 3,
+        width: tokenPx * 2, text: token.label,
+        fontSize: 11, fill: 'white', align: 'center',
+        shadowColor: 'black', shadowBlur: 3, shadowOpacity: 0.8,
+      }));
+      // Condition badges
+      if (token.conditions?.length) {
+        const badgeSize = Math.max(10, tokenPx * 0.25);
+        token.conditions.forEach((cond, i) => {
+          const badgeX = i * (badgeSize + 2);
+          group.add(new Konva.Circle({
+            x: badgeX + badgeSize / 2,
+            y: tokenPx + 16 + badgeSize / 2,
+            radius: badgeSize / 2,
+            fill: this.conditionColor(cond.condition),
+            stroke: '#fff', strokeWidth: 1,
+          }));
+          group.add(new Konva.Text({
+            x: badgeX, y: tokenPx + 16 + badgeSize / 2 - 5,
+            width: badgeSize,
+            text: cond.condition.slice(0, 1).toUpperCase(),
+            fontSize: Math.max(8, badgeSize * 0.6),
+            fill: 'white', align: 'center', fontStyle: 'bold',
+          }));
+        });
+      }
+    };
 
     if (token.imageUrl) {
       const img = new window.Image();
       img.crossOrigin = 'anonymous';
       img.onload = () => {
-        const konvaImg = new Konva.Image({
-          image: img,
-          x: 0, y: 0,
-          width: tokenPx, height: tokenPx,
+        group.add(new Konva.Image({
+          image: img, x: 0, y: 0, width: tokenPx, height: tokenPx,
           clipFunc: (ctx: CanvasRenderingContext2D) => {
             ctx.arc(tokenPx / 2, tokenPx / 2, tokenPx / 2, 0, Math.PI * 2, false);
           },
-        });
-        group.add(konvaImg);
+        }));
+        addOverlays();
         this.tokenLayer.draw();
       };
       img.src = token.imageUrl;
@@ -533,50 +591,9 @@ export class KonvaStageComponent implements AfterViewInit, OnDestroy, OnChanges 
         width: tokenPx,
         text: this.initials(token.label),
         fontSize: Math.max(10, tokenPx * 0.3),
-        fill: 'white',
-        align: 'center',
-        fontStyle: 'bold',
+        fill: 'white', align: 'center', fontStyle: 'bold',
       }));
-    }
-
-    // Label below token
-    group.add(new Konva.Text({
-      x: -tokenPx * 0.5,
-      y: tokenPx + 3,
-      width: tokenPx * 2,
-      text: token.label,
-      fontSize: 11,
-      fill: 'white',
-      align: 'center',
-      shadowColor: 'black',
-      shadowBlur: 3,
-      shadowOpacity: 0.8,
-    }));
-
-    // Condition badges
-    if (token.conditions?.length) {
-      const badgeSize = Math.max(10, tokenPx * 0.25);
-      token.conditions.forEach((cond, i) => {
-        const badgeX = i * (badgeSize + 2);
-        group.add(new Konva.Circle({
-          x: badgeX + badgeSize / 2,
-          y: tokenPx + 16 + badgeSize / 2,
-          radius: badgeSize / 2,
-          fill: this.conditionColor(cond.condition),
-          stroke: '#fff',
-          strokeWidth: 1,
-        }));
-        group.add(new Konva.Text({
-          x: badgeX,
-          y: tokenPx + 16 + badgeSize / 2 - 5,
-          width: badgeSize,
-          text: cond.condition.slice(0, 1).toUpperCase(),
-          fontSize: Math.max(8, badgeSize * 0.6),
-          fill: 'white',
-          align: 'center',
-          fontStyle: 'bold',
-        }));
-      });
+      addOverlays();
     }
 
     // Right-click or Ctrl+click selects token (DM only)
@@ -593,7 +610,6 @@ export class KonvaStageComponent implements AfterViewInit, OnDestroy, OnChanges 
         const gs = this._scene?.gridSize ?? 50;
         const cellX = Math.round(pos.x / gs);
         const cellY = Math.round(pos.y / gs);
-        // Snap to grid
         group.position({ x: cellX * gs, y: cellY * gs });
         this.tokenLayer.draw();
         this.tokenDropped.emit({ tokenId: token.id, sceneId: token.sceneId, x: cellX, y: cellY });
@@ -602,6 +618,21 @@ export class KonvaStageComponent implements AfterViewInit, OnDestroy, OnChanges 
 
     this.tokenMap.set(token.id, group);
     this.tokenLayer.add(group);
+  }
+
+  private addHpBar(group: Konva.Group, tokenPx: number, offsetY: number,
+                   value: number, max: number, color: string) {
+    const pct = Math.max(0, Math.min(1, value / max));
+    group.add(new Konva.Rect({
+      x: 0, y: offsetY, width: tokenPx, height: 5,
+      fill: 'rgba(0,0,0,0.6)', cornerRadius: 2, listening: false,
+    }));
+    if (pct > 0) {
+      group.add(new Konva.Rect({
+        x: 0, y: offsetY, width: tokenPx * pct, height: 5,
+        fill: color, cornerRadius: 2, listening: false,
+      }));
+    }
   }
 
   private removeTokenFromStage(tokenId: string) {

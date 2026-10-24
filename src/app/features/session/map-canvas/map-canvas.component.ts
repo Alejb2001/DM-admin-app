@@ -43,8 +43,10 @@ import { ConditionPickerComponent } from '../token-conditions/condition-picker.c
               [sessionId]="sessionId()"
               [sceneId]="activeScene()?.id ?? null"
               [tokens]="tokens()"
+              [selectedToken]="selectedToken()"
               (tokenAdded)="onTokenAdded($event)"
               (tokenDeleted)="onTokenDeleted($event)"
+              (tokenUpdated)="onTokenUpdated($event)"
             />
           </div>
           @if (activeScene()) {
@@ -313,6 +315,12 @@ export class MapCanvasComponent implements OnInit, OnDestroy {
 
   onTokenDeleted(tokenId: string) {
     this.tokens.update(list => list.filter(t => t.id !== tokenId));
+  }
+
+  onTokenUpdated(token: MapToken) {
+    this.tokens.update(list => list.map(t => t.id === token.id ? token : t));
+    this.selectedToken.set(token);
+    this.stageRef?.addOrUpdateToken(token);
   }
 
   // ── Fog events ──────────────────────────────────────────────────────────────
