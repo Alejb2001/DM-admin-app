@@ -1,0 +1,23 @@
+- generic [ref=f4e5]:
+  - generic [ref=f4e7]:
+    - generic [ref=f4e8]: Iniciar sesión
+    - generic [ref=f4e9]: Bienvenido de vuelta, Director
+  - generic [ref=f4e11]:
+    - generic [ref=f4e14]:
+      - generic [ref=f4e15]:
+        - text: Email
+        - generic [aria-hidden] [ref=f4e16]: "*"
+      - textbox "Email" [ref=f4e18]: alejbur@outlook.com
+    - generic [ref=f4e22]:
+      - generic [ref=f4e23]:
+        - text: Contraseña
+        - generic [aria-hidden] [ref=f4e24]: "*"
+      - textbox "Contraseña" [ref=f4e26]: Prueba123
+      - button "Mostrar contraseña" [ref=f4e28] [cursor=pointer]:
+        - img [aria-hidden] [ref=f4e29]: visibility
+    - paragraph [ref=f4e36]: Email o contraseña incorrectos.
+    - button "Entrar" [ref=f4e37] [cursor=pointer]
+  - paragraph [ref=f4e34]:
+    - text: ¿No tienes cuenta?
+    - link "Regístrate" [ref=f4e35] [cursor=pointer]:
+      - /url: /auth/register

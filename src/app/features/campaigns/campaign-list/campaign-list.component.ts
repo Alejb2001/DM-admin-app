@@ -45,7 +45,7 @@ export class CampaignListComponent implements OnInit {
         if (data.length === 0 && !localStorage.getItem('dm_welcomed')) {
           localStorage.setItem('dm_welcomed', '1');
           this.dialog.open(WelcomeDialogComponent, { width: '480px' })
-            .afterClosed().subscribe(() => this.openCreate());
+            .afterClosed().subscribe(create => { if (create) this.openCreate(); });
         }
       },
       error: () => this.loading.set(false),

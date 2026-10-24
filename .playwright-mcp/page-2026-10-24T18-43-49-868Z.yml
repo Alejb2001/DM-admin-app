@@ -1,0 +1,59 @@
+- generic [ref=f5e40]:
+  - generic [ref=f5e41]:
+    - link "DM Admin" [ref=f5e513] [cursor=pointer]:
+      - /url: /campaigns
+      - img [aria-hidden] [ref=f5e43]: auto_stories
+    - button [ref=f5e45] [cursor=pointer]:
+      - img [aria-hidden] [ref=f5e46]: account_circle
+  - main [ref=f5e49]:
+    - generic [ref=f5e392]:
+      - generic [ref=f5e393]:
+        - generic [ref=f5e394]:
+          - link "Mis Campañas" [ref=f5e514] [cursor=pointer]:
+            - /url: /campaigns
+            - img [aria-hidden] [ref=f5e396]: arrow_back
+            - text: Mis Campañas
+          - heading "Campaña de Prueba" [level=1] [ref=f5e515]
+          - paragraph [ref=f5e398]: Campaña para testing de features
+        - generic [ref=f5e399]:
+          - button "Ver Mundo" [ref=f5e516]:
+            - img [aria-hidden] [ref=f5e401]: map
+          - button "Invitar" [ref=f5e517]:
+            - img [aria-hidden] [ref=f5e406]: person_add
+          - button "Exportar" [ref=f5e518]:
+            - img [aria-hidden] [ref=f5e464]: download
+      - generic [ref=f5e415]:
+        - img [aria-hidden] [ref=f5e416]: wifi
+        - generic [ref=f5e417]: "En línea ahora:"
+        - generic [ref=f5e418]: DW Churri
+      - generic [ref=f5e420]:
+        - button "Iniciar sesión de juego" [active] [ref=f5e519]:
+          - img [aria-hidden] [ref=f5e422]: play_circle
+        - link "Ver historial de sesiones" [ref=f5e520] [cursor=pointer]:
+          - /url: /campaigns/0d053934-bc3e-471d-8539-0c05b87a091c/sessions
+          - img [aria-hidden] [ref=f5e427]: history
+      - separator [ref=f5e431]
+      - generic [ref=f5e432]:
+        - generic [ref=f5e433]:
+          - img [aria-hidden] [ref=f5e434]: vpn_key
+          - generic [ref=f5e435]:
+            - generic [ref=f5e436]: Código de unión
+            - generic [ref=f5e437]: AD30603B
+        - generic [ref=f5e438]:
+          - button "Código" [ref=f5e521]:
+            - img [aria-hidden] [ref=f5e440]: content_copy
+          - button "Copiar enlace" [ref=f5e522]:
+            - img [aria-hidden] [ref=f5e445]: link
+          - button "Regenerar" [ref=f5e523]:
+            - img [aria-hidden] [ref=f5e450]: refresh
+      - separator [ref=f5e454]
+      - heading "Miembros (0)" [level=2] [ref=f5e524]
+      - table [ref=f5e456]:
+        - rowgroup [ref=f5e457]:
+          - row [ref=f5e525]:
+            - columnheader [ref=f5e459]
+            - columnheader "Nombre" [ref=f5e526]
+            - columnheader "Rol" [ref=f5e527]
+            - columnheader "Se unió" [ref=f5e528]
+            - columnheader [ref=f5e463]
+        - rowgroup

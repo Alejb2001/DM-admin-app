@@ -27,7 +27,7 @@ import { SceneFormDialogComponent, SceneFormResult } from './scene-form-dialog.c
             (click)="activate(scene)"
             [matTooltip]="scene.backgroundUrl ? scene.name : scene.name + ' (sin fondo)'">
             <span matListItemTitle class="scene-name">{{ scene.name }}</span>
-            <div matListItemMeta class="scene-actions">
+            <div matListItemMeta class="scene-actions" (click)="$event.stopPropagation()">
               <button mat-icon-button (click)="openEditDialog(scene, $event)"
                       matTooltip="Editar" size="small">
                 <mat-icon>edit</mat-icon>

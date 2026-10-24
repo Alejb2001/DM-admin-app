@@ -1,0 +1,72 @@
+- generic [ref=f4e1]:
+  - generic [ref=f4e41]:
+    - generic [ref=f4e42]:
+      - link [ref=f4e380] [cursor=pointer]:
+        - /url: /campaigns
+        - img [aria-hidden] [ref=f4e44]: auto_stories
+        - generic [ref=f4e45]: DM Admin
+      - button [ref=f4e46] [cursor=pointer]:
+        - img [aria-hidden] [ref=f4e47]: account_circle
+    - main [ref=f4e50]:
+      - generic [ref=f4e319]:
+        - generic [ref=f4e320]:
+          - generic [ref=f4e321]:
+            - heading [level=1] [ref=f4e381]: Mundo
+            - paragraph [ref=f4e323]: 0 entidades
+          - generic [ref=f4e324]:
+            - button [ref=f4e382]:
+              - img [aria-hidden] [ref=f4e326]: hub
+              - generic [ref=f4e327]: Grafo
+            - button [ref=f4e383]:
+              - img [aria-hidden] [ref=f4e331]: tune
+              - generic [ref=f4e332]: Tipos
+            - button [ref=f4e384]:
+              - img [aria-hidden] [ref=f4e336]: sync_alt
+              - generic [ref=f4e337]: Relaciones
+            - button [ref=f4e385]:
+              - img [aria-hidden] [ref=f4e341]: add
+              - generic [ref=f4e342]: Nueva entidad
+        - generic [ref=f4e348]:
+          - generic: Buscar entidades...
+          - img [aria-hidden] [ref=f4e351]: search
+          - textbox [ref=f4e386]
+        - generic [ref=f4e355]:
+          - button [ref=f4e387]:
+            - generic [ref=f4e357]: Todas
+          - button [ref=f4e388]:
+            - img [aria-hidden] [ref=f4e389]: person
+            - generic [ref=f4e390]: Personaje
+          - button [ref=f4e393]:
+            - img [aria-hidden] [ref=f4e394]: place
+            - generic [ref=f4e395]: Lugar
+          - button [ref=f4e398]:
+            - img [aria-hidden] [ref=f4e399]: groups
+            - generic [ref=f4e400]: Facción
+          - button [ref=f4e403]:
+            - img [aria-hidden] [ref=f4e404]: inventory_2
+            - generic [ref=f4e405]: Objeto
+          - button [ref=f4e408]:
+            - img [aria-hidden] [ref=f4e409]: event
+            - generic [ref=f4e410]: Evento
+        - generic [ref=f4e413]:
+          - img [aria-hidden] [ref=f4e414]: public
+          - paragraph [ref=f4e415]: No hay entidades todavía.
+          - button [ref=f4e416]:
+            - generic [ref=f4e417]: Crear primera entidad
+  - dialog [ref=f4e423]:
+    - generic [ref=f4e426]:
+      - heading "Nueva Entidad" [level=2] [ref=f4e427]
+      - generic [ref=f4e429]:
+        - generic [ref=f4e432] [cursor=pointer]:
+          - generic [ref=f4e433]:
+            - text: Tipo de entidad
+            - generic [aria-hidden] [ref=f4e434]: "*"
+          - combobox "Tipo de entidad" [active] [ref=f4e436]
+        - generic [ref=f4e447]:
+          - generic [ref=f4e448]:
+            - text: Nombre
+            - generic [aria-hidden] [ref=f4e449]: "*"
+          - textbox "Nombre" [ref=f4e451]
+      - generic [ref=f4e453]:
+        - button "Cancelar" [ref=f4e454]
+        - button "Crear" [ref=f4e458]

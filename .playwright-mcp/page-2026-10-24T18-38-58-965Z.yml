@@ -1,0 +1,45 @@
+- generic [ref=f4e1]:
+  - generic [ref=f4e41]:
+    - generic [ref=f4e42]:
+      - link [ref=f4e43] [cursor=pointer]:
+        - /url: /campaigns
+        - img [aria-hidden] [ref=f4e44]: auto_stories
+        - generic [ref=f4e45]: DM Admin
+      - button [ref=f4e46] [cursor=pointer]:
+        - img [aria-hidden] [ref=f4e47]: account_circle
+    - main [ref=f4e50]:
+      - generic [ref=f4e51]:
+        - generic [ref=f4e52]:
+          - heading [level=1] [ref=f4e53]: Mis Campañas
+          - generic [ref=f4e54]:
+            - generic [ref=f4e55]:
+              - generic [ref=f4e58]:
+                - generic: Código de campaña
+                - textbox [ref=f4e61]:
+                  - /placeholder: XXXXXXXX
+              - button [disabled]:
+                - img [aria-hidden]: login
+                - generic: Unirse
+            - button [ref=f4e63]:
+              - img [aria-hidden] [ref=f4e64]: add
+              - generic [ref=f4e65]: Nueva campaña
+        - generic [ref=f4e68]:
+          - img [aria-hidden] [ref=f4e69]: auto_stories
+          - paragraph [ref=f4e70]: No tienes campañas todavía.
+          - button [ref=f4e71]:
+            - generic [ref=f4e72]: Crear tu primera campaña
+  - dialog [ref=f4e115]:
+    - generic [ref=f4e118]:
+      - heading "Nueva Campaña" [level=2] [ref=f4e119]
+      - generic [ref=f4e121]:
+        - generic [ref=f4e124]:
+          - generic [ref=f4e125]:
+            - text: Nombre
+            - generic [aria-hidden] [ref=f4e126]: "*"
+          - textbox "Nombre" [active] [ref=f4e128]
+        - generic [ref=f4e132]:
+          - generic: Descripción (opcional)
+          - textbox "Descripción (opcional)" [ref=f4e135]
+      - generic [ref=f4e137]:
+        - button "Cancelar" [ref=f4e138]
+        - button "Crear" [ref=f4e142]

@@ -1,0 +1,80 @@
+- generic [ref=f5e1]:
+  - generic [ref=f5e40]:
+    - generic [ref=f5e41]:
+      - link [ref=f5e469] [cursor=pointer]:
+        - /url: /campaigns
+        - img [aria-hidden] [ref=f5e43]: auto_stories
+        - generic [ref=f5e44]: DM Admin
+      - button [ref=f5e45] [cursor=pointer]:
+        - img [aria-hidden] [ref=f5e46]: account_circle
+    - main [ref=f5e49]:
+      - generic [ref=f5e392]:
+        - generic [ref=f5e393]:
+          - generic [ref=f5e394]:
+            - link [ref=f5e470] [cursor=pointer]:
+              - /url: /campaigns
+              - img [aria-hidden] [ref=f5e396]: arrow_back
+              - text: Mis Campañas
+            - heading [level=1] [ref=f5e471]: Campaña de Prueba
+            - paragraph [ref=f5e398]: Campaña para testing de features
+          - generic [ref=f5e399]:
+            - button [ref=f5e472]:
+              - img [aria-hidden] [ref=f5e401]: map
+              - generic [ref=f5e402]: Ver Mundo
+            - button [ref=f5e473]:
+              - img [aria-hidden] [ref=f5e406]: person_add
+              - generic [ref=f5e407]: Invitar
+            - button [ref=f5e474]:
+              - img [aria-hidden] [ref=f5e464]: download
+              - generic [ref=f5e412]: Exportar
+        - generic [ref=f5e415]:
+          - img [aria-hidden] [ref=f5e416]: wifi
+          - generic [ref=f5e417]: "En línea ahora:"
+          - generic [ref=f5e418]: DW Churri
+        - generic [ref=f5e420]:
+          - button [ref=f5e475]:
+            - img [aria-hidden] [ref=f5e422]: play_circle
+            - generic [ref=f5e423]: Iniciar sesión de juego
+          - link [ref=f5e476] [cursor=pointer]:
+            - /url: /campaigns/0d053934-bc3e-471d-8539-0c05b87a091c/sessions
+            - img [aria-hidden] [ref=f5e427]: history
+            - generic [ref=f5e428]: Ver historial de sesiones
+        - separator [ref=f5e431]
+        - generic [ref=f5e432]:
+          - generic [ref=f5e433]:
+            - img [aria-hidden] [ref=f5e434]: vpn_key
+            - generic [ref=f5e435]:
+              - generic [ref=f5e436]: Código de unión
+              - generic [ref=f5e437]: AD30603B
+          - generic [ref=f5e438]:
+            - button [ref=f5e477]:
+              - img [aria-hidden] [ref=f5e440]: content_copy
+              - generic [ref=f5e441]: Código
+            - button [ref=f5e478]:
+              - img [aria-hidden] [ref=f5e445]: link
+              - generic [ref=f5e446]: Copiar enlace
+            - button [ref=f5e479]:
+              - img [aria-hidden] [ref=f5e450]: refresh
+              - generic [ref=f5e451]: Regenerar
+        - separator [ref=f5e454]
+        - heading [level=2] [ref=f5e480]: Miembros (0)
+        - table [ref=f5e456]:
+          - rowgroup [ref=f5e457]:
+            - row [ref=f5e481]:
+              - columnheader [ref=f5e459]
+              - columnheader [ref=f5e482]: Nombre
+              - columnheader [ref=f5e483]: Rol
+              - columnheader [ref=f5e484]: Se unió
+              - columnheader [ref=f5e463]
+  - dialog [ref=f5e488]:
+    - generic [ref=f5e491]:
+      - heading "Iniciar sesión de juego" [level=2] [ref=f5e492]
+      - generic [ref=f5e497]:
+        - generic [ref=f5e498]:
+          - text: Nombre de la sesión
+          - generic [aria-hidden] [ref=f5e499]: "*"
+        - textbox "Nombre de la sesión" [active] [ref=f5e501]:
+          - /placeholder: "Ej: Sesión 12 — El castillo de Ironhold"
+      - generic [ref=f5e503]:
+        - button "Cancelar" [ref=f5e504]
+        - button "Iniciar" [ref=f5e508]

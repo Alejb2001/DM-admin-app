@@ -1,0 +1,43 @@
+- generic [ref=f5e40]:
+  - generic [ref=f5e41]:
+    - link "DM Admin" [ref=f5e42] [cursor=pointer]:
+      - /url: /campaigns
+      - img [aria-hidden] [ref=f5e43]: auto_stories
+    - button [ref=f5e45] [cursor=pointer]:
+      - img [aria-hidden] [ref=f5e46]: account_circle
+  - main [ref=f5e49]:
+    - generic [ref=f5e277]:
+      - generic [ref=f5e278]:
+        - generic [ref=f5e279]:
+          - heading "Mundo" [level=1] [ref=f5e280]
+          - paragraph [ref=f5e281]: 1 entidad
+        - generic [ref=f5e282]:
+          - button "Grafo" [ref=f5e283]:
+            - img [aria-hidden] [ref=f5e284]: hub
+          - button "Tipos" [ref=f5e288]:
+            - img [aria-hidden] [ref=f5e289]: tune
+          - button "Relaciones" [ref=f5e293]:
+            - img [aria-hidden] [ref=f5e294]: sync_alt
+          - button "Nueva entidad" [ref=f5e298]:
+            - img [aria-hidden] [ref=f5e299]: add
+      - generic [ref=f5e306]:
+        - generic: Buscar entidades...
+        - img [aria-hidden] [ref=f5e309]: search
+        - textbox "Buscar entidades..." [ref=f5e311]
+      - generic [ref=f5e313]:
+        - button "Todas" [ref=f5e314]
+        - button "Personaje" [ref=f5e318]:
+          - img [aria-hidden] [ref=f5e319]: person
+        - button "Lugar" [ref=f5e323]:
+          - img [aria-hidden] [ref=f5e324]: place
+        - button "Facción" [ref=f5e328]:
+          - img [aria-hidden] [ref=f5e329]: groups
+        - button "Objeto" [ref=f5e333]:
+          - img [aria-hidden] [ref=f5e334]: inventory_2
+        - button "Evento" [ref=f5e338]:
+          - img [aria-hidden] [ref=f5e339]: event
+      - generic [ref=f5e345] [cursor=pointer]:
+        - img [aria-hidden] [ref=f5e346]: person
+        - generic [ref=f5e347]:
+          - generic [ref=f5e348]: Lyra Shadowmere
+          - generic [ref=f5e349]: Personaje

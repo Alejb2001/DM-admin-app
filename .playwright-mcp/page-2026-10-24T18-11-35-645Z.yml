@@ -1,0 +1,35 @@
+- generic [ref=f3e5]:
+  - generic [ref=f3e7]:
+    - generic [ref=f3e8]: Crear cuenta
+    - generic [ref=f3e9]: Empieza a construir tu mundo
+  - generic [ref=f3e11]:
+    - generic [ref=f3e14]:
+      - generic [ref=f3e15]:
+        - text: Nombre de Director
+        - generic [aria-hidden] [ref=f3e16]: "*"
+      - textbox "Nombre de Director" [ref=f3e18]: Alejandro
+    - generic [ref=f3e22]:
+      - generic [ref=f3e23]:
+        - text: Email
+        - generic [aria-hidden] [ref=f3e24]: "*"
+      - textbox "Email" [ref=f3e26]: alejbur@outlook.com
+    - generic [ref=f3e30]:
+      - generic [ref=f3e31]:
+        - text: Contraseña
+        - generic [aria-hidden] [ref=f3e32]: "*"
+      - textbox "Contraseña" [ref=f3e34]: Prueba123
+      - button "Mostrar contraseña" [ref=f3e36] [cursor=pointer]:
+        - img [aria-hidden] [ref=f3e37]: visibility
+    - generic [ref=f3e43]:
+      - generic [ref=f3e44]:
+        - text: Confirmar contraseña
+        - generic [aria-hidden] [ref=f3e45]: "*"
+      - textbox "Confirmar contraseña" [ref=f3e47]: Prueba123
+      - button "Mostrar contraseña" [ref=f3e49] [cursor=pointer]:
+        - img [aria-hidden] [ref=f3e50]: visibility
+    - paragraph [ref=f3e61]: Ese email ya está registrado.
+    - button "Crear cuenta" [ref=f3e54] [cursor=pointer]
+  - paragraph [ref=f3e59]:
+    - text: ¿Ya tienes cuenta?
+    - link "Inicia sesión" [ref=f3e60] [cursor=pointer]:
+      - /url: /auth/login

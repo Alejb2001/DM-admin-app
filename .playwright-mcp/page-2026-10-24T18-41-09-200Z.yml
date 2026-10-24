@@ -1,0 +1,70 @@
+- generic [active] [ref=f4e1]:
+  - generic [ref=f4e41]:
+    - generic [ref=f4e42]:
+      - link "DM Admin" [ref=f4e482] [cursor=pointer]:
+        - /url: /campaigns
+        - img [aria-hidden] [ref=f4e44]: auto_stories
+      - button [ref=f4e46] [cursor=pointer]:
+        - img [aria-hidden] [ref=f4e47]: account_circle
+    - main [ref=f4e50]:
+      - generic [ref=f4e502]:
+        - generic [ref=f4e519]:
+          - link [ref=f4e520] [cursor=pointer]:
+            - /url: /campaigns/0d053934-bc3e-471d-8539-0c05b87a091c
+            - img [aria-hidden] [ref=f4e521]: arrow_back
+          - generic [ref=f4e522]:
+            - img [aria-hidden] [ref=f4e523]: person
+            - text: Personaje
+        - generic [ref=f4e641]:
+          - heading "Lyra Shadowmere" [level=1] [ref=f4e642]
+          - button [ref=f4e643] [cursor=pointer]:
+            - img [aria-hidden] [ref=f4e644]: edit
+        - paragraph [ref=f4e530]: /lyra-shadowmere
+        - separator [ref=f4e531]
+        - generic [ref=f4e532]:
+          - heading "Ficha" [level=3] [ref=f4e533]
+          - generic [ref=f4e535]:
+            - generic [ref=f4e536]:
+              - generic [ref=f4e537]: Recursos
+              - button [ref=f4e538] [cursor=pointer]:
+                - img [aria-hidden] [ref=f4e539]: add
+            - paragraph [ref=f4e542]: Sin recursos. Añade HP, Mana, etc.
+        - separator [ref=f4e543]
+        - generic [ref=f4e544]:
+          - generic [ref=f4e545]:
+            - heading "Relaciones" [level=3] [ref=f4e546]
+            - button "Agregar" [ref=f4e547]:
+              - img [aria-hidden] [ref=f4e548]: add
+          - paragraph [ref=f4e552]: Sin relaciones. Conecta esta entidad con otras del mundo.
+        - separator [ref=f4e553]
+        - generic [ref=f4e554]:
+          - heading "Visibilidad por rol" [level=3] [ref=f4e555]
+          - paragraph [ref=f4e556]: Controla qué roles pueden ver o editar esta entidad.
+          - generic [ref=f4e557]:
+            - generic [ref=f4e558]: Spectator
+            - generic [ref=f4e559]:
+              - generic [ref=f4e560]:
+                - generic [ref=f4e561]: Ver
+                - switch [ref=f4e564] [cursor=pointer]
+              - generic [ref=f4e574]:
+                - generic [ref=f4e575]: Editar
+                - generic [ref=f4e577]:
+                  - switch [disabled]
+          - generic [ref=f4e586]:
+            - generic [ref=f4e587]: Player
+            - generic [ref=f4e588]:
+              - generic [ref=f4e589]:
+                - generic [ref=f4e590]: Ver
+                - switch [ref=f4e593] [cursor=pointer]
+              - generic [ref=f4e603]:
+                - generic [ref=f4e604]: Editar
+                - generic [ref=f4e606]:
+                  - switch [disabled]
+        - separator [ref=f4e615]
+        - generic [ref=f4e616]:
+          - generic [ref=f4e617]:
+            - heading "Historial de cambios" [level=3] [ref=f4e618]
+            - button "Ocultar" [ref=f4e619]:
+              - img [aria-hidden] [ref=f4e620]: expand_less
+          - paragraph [ref=f4e624]: Sin cambios registrados todavía.
+  - generic: Guardado

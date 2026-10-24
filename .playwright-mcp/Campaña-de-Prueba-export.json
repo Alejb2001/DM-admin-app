@@ -1,0 +1,63 @@
+{
+  "id": "0d053934-bc3e-471d-8539-0c05b87a091c",
+  "name": "Campa\u00F1a de Prueba",
+  "description": "Campa\u00F1a para testing de features",
+  "createdAt": "2026-10-24T18:39:24.449017Z",
+  "exportedAt": "2026-10-24T18:43:18.2025344Z",
+  "entityTypes": [
+    {
+      "id": "11111111-0000-0000-0000-000000000005",
+      "name": "Evento",
+      "icon": "event",
+      "color": "#F44336",
+      "isSystemDefault": true,
+      "fields": []
+    },
+    {
+      "id": "11111111-0000-0000-0000-000000000003",
+      "name": "Facci\u00F3n",
+      "icon": "groups",
+      "color": "#FF9800",
+      "isSystemDefault": true,
+      "fields": []
+    },
+    {
+      "id": "11111111-0000-0000-0000-000000000002",
+      "name": "Lugar",
+      "icon": "place",
+      "color": "#4CAF50",
+      "isSystemDefault": true,
+      "fields": []
+    },
+    {
+      "id": "11111111-0000-0000-0000-000000000004",
+      "name": "Objeto",
+      "icon": "inventory_2",
+      "color": "#9C27B0",
+      "isSystemDefault": true,
+      "fields": []
+    },
+    {
+      "id": "11111111-0000-0000-0000-000000000001",
+      "name": "Personaje",
+      "icon": "person",
+      "color": "#3F51B5",
+      "isSystemDefault": true,
+      "fields": []
+    }
+  ],
+  "entities": [
+    {
+      "id": "5cf79fe0-d832-49ce-9a43-dde8b86bd5d9",
+      "entityTypeId": "11111111-0000-0000-0000-000000000001",
+      "entityTypeName": "Personaje",
+      "name": "Lyra Shadowmere",
+      "slug": "lyra-shadowmere",
+      "customFields": null,
+      "createdAt": "2026-10-24T18:40:36.399078Z",
+      "updatedAt": "2026-10-24T18:41:08.657739Z"
+    }
+  ],
+  "relationshipTypes": [],
+  "relationships": []
+}

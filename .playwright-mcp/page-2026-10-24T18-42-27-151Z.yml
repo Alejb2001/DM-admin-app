@@ -1,0 +1,20 @@
+- generic [ref=f5e40]:
+  - generic [ref=f5e41]:
+    - link "DM Admin" [ref=f5e42] [cursor=pointer]:
+      - /url: /campaigns
+      - img [aria-hidden] [ref=f5e43]: auto_stories
+    - button [ref=f5e45] [cursor=pointer]:
+      - img [aria-hidden] [ref=f5e46]: account_circle
+  - main [ref=f5e49]:
+    - generic [ref=f5e253]:
+      - link [ref=f5e254] [cursor=pointer]:
+        - /url: /campaigns/0d053934-bc3e-471d-8539-0c05b87a091c/world
+        - img [aria-hidden] [ref=f5e255]: arrow_back
+      - generic [ref=f5e258]: Grafo del mundo
+      - generic [ref=f5e259]: 1 entidades · 0 relaciones
+      - button [ref=f5e260] [cursor=pointer]:
+        - img [aria-hidden] [ref=f5e261]: fit_screen
+      - button [ref=f5e264] [cursor=pointer]:
+        - img [aria-hidden] [ref=f5e265]: auto_graph
+      - button [ref=f5e268] [cursor=pointer]:
+        - img [aria-hidden] [ref=f5e269]: refresh

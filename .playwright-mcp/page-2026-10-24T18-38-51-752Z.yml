@@ -1,0 +1,53 @@
+- generic [ref=f4e1]:
+  - generic [ref=f4e41]:
+    - generic [ref=f4e42]:
+      - link [ref=f4e43] [cursor=pointer]:
+        - /url: /campaigns
+        - img [aria-hidden] [ref=f4e44]: auto_stories
+        - generic [ref=f4e45]: DM Admin
+      - button [ref=f4e46] [cursor=pointer]:
+        - img [aria-hidden] [ref=f4e47]: account_circle
+    - main [ref=f4e50]:
+      - generic [ref=f4e51]:
+        - generic [ref=f4e52]:
+          - heading [level=1] [ref=f4e53]: Mis Campañas
+          - generic [ref=f4e54]:
+            - generic [ref=f4e55]:
+              - generic [ref=f4e58]:
+                - generic: Código de campaña
+                - textbox [ref=f4e61]:
+                  - /placeholder: XXXXXXXX
+              - button [disabled]:
+                - img [aria-hidden]: login
+                - generic: Unirse
+            - button [ref=f4e63]:
+              - img [aria-hidden] [ref=f4e64]: add
+              - generic [ref=f4e65]: Nueva campaña
+        - generic [ref=f4e68]:
+          - img [aria-hidden] [ref=f4e69]: auto_stories
+          - paragraph [ref=f4e70]: No tienes campañas todavía.
+          - button [ref=f4e71]:
+            - generic [ref=f4e72]: Crear tu primera campaña
+  - dialog [ref=f4e78]:
+    - generic [ref=f4e82]:
+      - img [aria-hidden] [ref=f4e84]: shield
+      - heading "¡Bienvenido a DM Admin!" [level=2] [ref=f4e85]
+      - generic [ref=f4e86]:
+        - paragraph [ref=f4e87]: Tu herramienta para gestionar campañas de rol de mesa. Crea entidades, define relaciones, controla lo que ven tus jugadores y colabora en tiempo real.
+        - generic [ref=f4e88]:
+          - generic [ref=f4e89]:
+            - img [aria-hidden] [ref=f4e90]: public
+            - generic [ref=f4e91]: Construye tu mundo
+          - generic [ref=f4e92]:
+            - img [aria-hidden] [ref=f4e93]: hub
+            - generic [ref=f4e94]: Red de relaciones
+          - generic [ref=f4e95]:
+            - img [aria-hidden] [ref=f4e96]: visibility
+            - generic [ref=f4e97]: Control de revelación
+          - generic [ref=f4e98]:
+            - img [aria-hidden] [ref=f4e99]: bolt
+            - generic [ref=f4e100]: Tiempo real
+      - generic [ref=f4e101]:
+        - button "Explorar primero" [active] [ref=f4e102]
+        - button "Crear mi primera campaña" [ref=f4e106]:
+          - img [aria-hidden] [ref=f4e107]: add

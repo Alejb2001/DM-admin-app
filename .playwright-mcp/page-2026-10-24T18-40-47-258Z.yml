@@ -1,0 +1,9 @@
+- generic [ref=f4e41]:
+  - generic [ref=f4e42]:
+    - link "DM Admin" [ref=f4e482] [cursor=pointer]:
+      - /url: /campaigns
+      - img [aria-hidden] [ref=f4e44]: auto_stories
+    - button [ref=f4e46] [cursor=pointer]:
+      - img [aria-hidden] [ref=f4e47]: account_circle
+  - main [ref=f4e50]:
+    - progressbar [ref=f4e504]

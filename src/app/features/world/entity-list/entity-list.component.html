@@ -1,7 +1,12 @@
 <div class="page-header">
-  <div>
-    <h1>Mundo</h1>
-    <p class="subtitle">{{ entities().length }} entidad{{ entities().length === 1 ? '' : 'es' }}</p>
+  <div style="display:flex;align-items:center;gap:8px">
+    <a routerLink=".." mat-icon-button style="color:#616161">
+      <mat-icon>arrow_back</mat-icon>
+    </a>
+    <div>
+      <h1>Mundo</h1>
+      <p class="subtitle">{{ entities().length }} entidad{{ entities().length === 1 ? '' : 'es' }}</p>
+    </div>
   </div>
   <div class="header-actions">
     <button mat-stroked-button (click)="goToGraph()" matTooltip="Vista de grafo">

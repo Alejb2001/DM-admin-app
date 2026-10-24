@@ -39,8 +39,8 @@ import { MatIconModule } from '@angular/material/icon';
         </div>
       </mat-dialog-content>
       <mat-dialog-actions align="end">
-        <button mat-button (click)="dismiss()">Explorar primero</button>
-        <button mat-raised-button color="primary" (click)="dismiss()">
+        <button mat-button (click)="dismiss(false)">Explorar primero</button>
+        <button mat-raised-button color="primary" (click)="dismiss(true)">
           <mat-icon>add</mat-icon> Crear mi primera campaña
         </button>
       </mat-dialog-actions>
@@ -61,7 +61,7 @@ import { MatIconModule } from '@angular/material/icon';
 export class WelcomeDialogComponent {
   private ref = inject(MatDialogRef<WelcomeDialogComponent>);
 
-  dismiss() {
-    this.ref.close();
+  dismiss(create: boolean) {
+    this.ref.close(create);
   }
 }

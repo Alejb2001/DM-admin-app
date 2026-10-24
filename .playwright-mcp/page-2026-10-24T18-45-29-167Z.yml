@@ -1,0 +1,98 @@
+- generic [ref=f5e1]:
+  - generic [ref=f5e40]:
+    - generic [ref=f5e41]:
+      - link [ref=f5e686] [cursor=pointer]:
+        - /url: /campaigns
+        - img [aria-hidden] [ref=f5e43]: auto_stories
+        - generic [ref=f5e44]: DM Admin
+      - button [ref=f5e45] [cursor=pointer]:
+        - img [aria-hidden] [ref=f5e46]: account_circle
+    - main [ref=f5e49]:
+      - generic [ref=f5e530]:
+        - generic [ref=f5e532]:
+          - generic [ref=f5e533]:
+            - img [aria-hidden] [ref=f5e534]: videogame_asset
+            - generic [ref=f5e535]:
+              - generic [ref=f5e536]: Sesión 1 — El comienzo
+              - generic [ref=f5e537]: Sesión activa
+          - button [ref=f5e687]:
+            - img [aria-hidden] [ref=f5e539]: stop_circle
+            - generic [ref=f5e540]: Cerrar sesión
+        - generic [ref=f5e543]:
+          - generic [ref=f5e546]:
+            - generic [ref=f5e547]:
+              - generic [ref=f5e550]:
+                - generic [ref=f5e551]:
+                  - generic [ref=f5e552]: Escenas
+                  - button [ref=f5e553] [cursor=pointer]:
+                    - img [aria-hidden] [ref=f5e554]: add
+                - navigation [ref=f5e557]:
+                  - generic [ref=f5e660] [cursor=pointer]:
+                    - generic [ref=f5e661]: Taberna del Dragón
+                    - generic [ref=f5e662]:
+                      - button [ref=f5e663]:
+                        - img [aria-hidden] [ref=f5e664]: edit
+                      - button [ref=f5e667]:
+                        - img [aria-hidden] [ref=f5e668]: delete
+                  - generic [ref=f5e671] [cursor=pointer]:
+                    - generic [ref=f5e672]: Taberna del Dragón
+                    - generic [ref=f5e673]:
+                      - button [ref=f5e674]:
+                        - img [aria-hidden] [ref=f5e675]: edit
+                      - button [ref=f5e678]:
+                        - img [aria-hidden] [ref=f5e679]: delete
+              - generic [ref=f5e561]:
+                - generic [ref=f5e562]:
+                  - generic [ref=f5e563]: Tokens
+                  - button [ref=f5e564] [cursor=pointer]:
+                    - img [aria-hidden] [ref=f5e565]: add_circle
+                - generic [ref=f5e568]: Sin tokens en la escena activa
+            - paragraph [ref=f5e572]: Crea una escena en el panel izquierdo para comenzar
+          - generic [ref=f5e573]:
+            - generic [ref=f5e574]:
+              - button [ref=f5e688] [cursor=pointer]: Chat
+              - button [ref=f5e689] [cursor=pointer]: Fichas
+              - button [ref=f5e690] [cursor=pointer]: Combate
+            - generic [ref=f5e579]:
+              - generic [ref=f5e580]: El chat está vacío. ¡Sé el primero en escribir!
+              - generic [ref=f5e582]:
+                - generic [ref=f5e583]:
+                  - button [ref=f5e584] [cursor=pointer]:
+                    - img [aria-hidden] [ref=f5e585]: auto_stories
+                  - textbox [ref=f5e691]:
+                    - /placeholder: Escribe un mensaje o /roll 2d6...
+                  - button [disabled]:
+                    - img [aria-hidden]: send
+                - generic [ref=f5e595]:
+                  - text: "Comandos:"
+                  - code [ref=f5e596]: /roll 2d6
+                  - text: ·
+                  - code [ref=f5e597]: /roll 1d20+5
+                  - text: ·
+                  - code [ref=f5e598]: /roll 2d20 ventaja
+                  - text: ·
+                  - code [ref=f5e599]: /roll secreto 1d20
+  - dialog [ref=f5e695]:
+    - generic [ref=f5e698]:
+      - heading "Editar escena" [level=2] [ref=f5e699]
+      - generic [ref=f5e701]:
+        - generic [ref=f5e704]:
+          - generic [ref=f5e705]:
+            - text: Nombre
+            - generic [aria-hidden] [ref=f5e706]: "*"
+          - textbox "Nombre" [active] [ref=f5e708]: Taberna del Dragón
+        - generic [ref=f5e712]:
+          - generic: URL de imagen de fondo (opcional)
+          - textbox "URL de imagen de fondo (opcional)" [ref=f5e715]:
+            - /placeholder: https://...
+        - generic [ref=f5e719]:
+          - generic [ref=f5e720]:
+            - text: Tamaño de celda (px)
+            - generic [aria-hidden] [ref=f5e721]: "*"
+          - spinbutton "Tamaño de celda (px)" [ref=f5e723]: "50"
+        - generic [ref=f5e727]:
+          - checkbox "Mostrar grid" [checked] [ref=f5e730] [cursor=pointer]
+          - generic [ref=f5e731] [cursor=pointer]: Mostrar grid
+      - generic [ref=f5e732]:
+        - button "Cancelar" [ref=f5e733]
+        - button "Guardar" [ref=f5e737]

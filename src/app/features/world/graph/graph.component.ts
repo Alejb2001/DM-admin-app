@@ -85,6 +85,8 @@ export class GraphComponent implements OnInit, AfterViewInit, OnDestroy {
     this.cy = cytoscape({
       container: this.containerRef.nativeElement,
       elements,
+      minZoom: 0.3,
+      maxZoom: 3,
       style: [
         {
           selector: 'node',
@@ -97,9 +99,9 @@ export class GraphComponent implements OnInit, AfterViewInit, OnDestroy {
             'font-size': '11px',
             'font-weight': 'bold',
             'text-wrap': 'wrap',
-            'text-max-width': '80px',
-            'width': '60px',
-            'height': '60px',
+            'text-max-width': '60px',
+            'width': '80px',
+            'height': '80px',
             'border-width': '2px',
             'border-color': '#fff',
             'text-outline-width': '2px',
@@ -146,6 +148,7 @@ export class GraphComponent implements OnInit, AfterViewInit, OnDestroy {
         idealEdgeLength: () => 120,
         gravity: 0.1,
         numIter: 1000,
+        stop: () => { this.cy?.fit(undefined, 60); },
       } as any,
     });
 

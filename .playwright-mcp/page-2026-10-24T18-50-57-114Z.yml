@@ -1,0 +1,65 @@
+- generic [ref=f5e40]:
+  - generic [ref=f5e41]:
+    - link "DM Admin" [ref=f5e742] [cursor=pointer]:
+      - /url: /campaigns
+      - img [aria-hidden] [ref=f5e43]: auto_stories
+    - button [ref=f5e45] [cursor=pointer]:
+      - img [aria-hidden] [ref=f5e46]: account_circle
+  - main [ref=f5e49]:
+    - generic [ref=f5e530]:
+      - generic [ref=f5e532]:
+        - generic [ref=f5e533]:
+          - img [aria-hidden] [ref=f5e534]: videogame_asset
+          - generic [ref=f5e535]:
+            - generic [ref=f5e536]: Sesión 1 — El comienzo
+            - generic [ref=f5e537]: Sesión activa
+        - button "Cerrar sesión" [ref=f5e743]:
+          - img [aria-hidden] [ref=f5e539]: stop_circle
+      - generic [ref=f5e543]:
+        - generic [ref=f5e547]:
+          - generic [ref=f5e550]:
+            - generic [ref=f5e551]:
+              - generic [ref=f5e552]: Escenas
+              - button [ref=f5e553] [cursor=pointer]:
+                - img [aria-hidden] [ref=f5e554]: add
+            - navigation [ref=f5e557]:
+              - generic [ref=f5e660] [cursor=pointer]:
+                - generic [ref=f5e661]: Taberna del Dragón
+                - generic [ref=f5e662]:
+                  - button [ref=f5e663]:
+                    - img [aria-hidden] [ref=f5e664]: edit
+                  - button [ref=f5e667]:
+                    - img [aria-hidden] [ref=f5e668]: delete
+              - generic [ref=f5e671] [cursor=pointer]:
+                - generic [ref=f5e672]: Taberna del Dragón
+                - generic [ref=f5e673]:
+                  - button [ref=f5e674]:
+                    - img [aria-hidden] [ref=f5e675]: edit
+                  - button [ref=f5e678]:
+                    - img [aria-hidden] [ref=f5e679]: delete
+          - generic [ref=f5e561]:
+            - generic [ref=f5e562]:
+              - generic [ref=f5e563]: Tokens
+              - button [ref=f5e564] [cursor=pointer]:
+                - img [aria-hidden] [ref=f5e565]: add_circle
+            - generic [ref=f5e568]: Sin tokens en la escena activa
+          - button [ref=f5e751] [cursor=pointer]:
+            - img [aria-hidden] [ref=f5e752]: cloud_off
+        - generic [ref=f5e573]:
+          - generic [ref=f5e574]:
+            - button "Chat" [ref=f5e744] [cursor=pointer]
+            - button "Fichas" [ref=f5e745] [cursor=pointer]
+            - button "Combate" [ref=f5e746] [cursor=pointer]
+          - generic [ref=f5e777]:
+            - generic [ref=f5e778]:
+              - generic [ref=f5e779]: Iniciativa
+              - button [active] [ref=f5e780] [cursor=pointer]:
+                - img [aria-hidden] [ref=f5e781]: add
+              - button [ref=f5e784] [cursor=pointer]:
+                - img [aria-hidden] [ref=f5e785]: delete_sweep
+            - generic [ref=f5e797]:
+              - textbox "Nombre" [ref=f5e798]: Lyra Shadowmere
+              - spinbutton "Init" [ref=f5e799]: "18"
+              - button [ref=f5e800] [cursor=pointer]:
+                - img [aria-hidden] [ref=f5e801]: check
+            - paragraph [ref=f5e792]: Sin entradas

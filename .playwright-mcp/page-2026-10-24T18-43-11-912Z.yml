@@ -1,0 +1,30 @@
+- generic [ref=f5e40]:
+  - generic [ref=f5e41]:
+    - link "DM Admin" [active] [ref=f5e42] [cursor=pointer]:
+      - /url: /campaigns
+      - img [aria-hidden] [ref=f5e43]: auto_stories
+    - button [ref=f5e45] [cursor=pointer]:
+      - img [aria-hidden] [ref=f5e46]: account_circle
+  - main [ref=f5e49]:
+    - generic [ref=f5e356]:
+      - generic [ref=f5e357]:
+        - heading "Mis Campañas" [level=1] [ref=f5e358]
+        - generic [ref=f5e359]:
+          - generic [ref=f5e360]:
+            - generic [ref=f5e363]:
+              - generic: Código de campaña
+              - textbox "Código de campaña" [ref=f5e366]:
+                - /placeholder: XXXXXXXX
+            - button "Unirse" [disabled]:
+              - img [aria-hidden]: login
+          - button "Nueva campaña" [ref=f5e368]:
+            - img [aria-hidden] [ref=f5e369]: add
+      - generic [ref=f5e374] [cursor=pointer]:
+        - generic [ref=f5e375]:
+          - img [aria-hidden] [ref=f5e376]: shield
+          - generic [ref=f5e377]:
+            - generic [ref=f5e378]: Campaña de Prueba
+            - generic [ref=f5e379]: Director
+        - paragraph [ref=f5e385]: Campaña para testing de features
+        - button "Ver Mundo" [ref=f5e387]:
+          - img [aria-hidden] [ref=f5e388]: map

@@ -1,0 +1,2 @@
+[   32540ms] [ERROR] Access to XMLHttpRequest at 'https://dm-admin-api.onrender.com/api/auth/login' from origin 'https://dm-admin-app.vercel.app' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource. @ https://dm-admin-app.vercel.app/auth/login:0
+[   32542ms] [ERROR] Failed to load resource: net::ERR_FAILED @ https://dm-admin-api.onrender.com/api/auth/login:0

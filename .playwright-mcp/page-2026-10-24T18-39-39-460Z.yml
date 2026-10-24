@@ -1,0 +1,55 @@
+- generic [ref=f4e41]:
+  - generic [ref=f4e42]:
+    - link "DM Admin" [ref=f4e147] [cursor=pointer]:
+      - /url: /campaigns
+      - img [aria-hidden] [ref=f4e44]: auto_stories
+    - button [ref=f4e46] [cursor=pointer]:
+      - img [aria-hidden] [ref=f4e47]: account_circle
+  - main [ref=f4e50]:
+    - generic [ref=f4e170]:
+      - generic [ref=f4e171]:
+        - generic [ref=f4e172]:
+          - link "Mis Campañas" [ref=f4e173] [cursor=pointer]:
+            - /url: /campaigns
+            - img [aria-hidden] [ref=f4e174]: arrow_back
+            - text: Mis Campañas
+          - heading "Campaña de Prueba" [level=1] [ref=f4e175]
+          - paragraph [ref=f4e176]: Campaña para testing de features
+        - generic [ref=f4e177]:
+          - button "Ver Mundo" [ref=f4e178]:
+            - img [aria-hidden] [ref=f4e179]: map
+          - button "Invitar" [ref=f4e183]:
+            - img [aria-hidden] [ref=f4e184]: person_add
+          - button "Exportar" [ref=f4e188]:
+            - img [aria-hidden] [ref=f4e189]: download
+      - generic [ref=f4e193]:
+        - button "Iniciar sesión de juego" [ref=f4e194]:
+          - img [aria-hidden] [ref=f4e195]: play_circle
+        - link "Ver historial de sesiones" [ref=f4e199] [cursor=pointer]:
+          - /url: /campaigns/0d053934-bc3e-471d-8539-0c05b87a091c/sessions
+          - img [aria-hidden] [ref=f4e200]: history
+      - separator [ref=f4e204]
+      - generic [ref=f4e205]:
+        - generic [ref=f4e206]:
+          - img [aria-hidden] [ref=f4e207]: vpn_key
+          - generic [ref=f4e208]:
+            - generic [ref=f4e209]: Código de unión
+            - generic [ref=f4e210]: 004F9552
+        - generic [ref=f4e211]:
+          - button "Código" [ref=f4e212]:
+            - img [aria-hidden] [ref=f4e213]: content_copy
+          - button "Copiar enlace" [ref=f4e217]:
+            - img [aria-hidden] [ref=f4e218]: link
+          - button "Regenerar" [ref=f4e222]:
+            - img [aria-hidden] [ref=f4e223]: refresh
+      - separator [ref=f4e227]
+      - heading "Miembros (0)" [level=2] [ref=f4e228]
+      - table [ref=f4e229]:
+        - rowgroup [ref=f4e230]:
+          - row [ref=f4e231]:
+            - columnheader [ref=f4e232]
+            - columnheader "Nombre" [ref=f4e233]
+            - columnheader "Rol" [ref=f4e234]
+            - columnheader "Se unió" [ref=f4e235]
+            - columnheader [ref=f4e236]
+        - rowgroup

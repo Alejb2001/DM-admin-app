@@ -1,0 +1,83 @@
+- generic [ref=f4e1]:
+  - generic [ref=f4e41]:
+    - generic [ref=f4e42]:
+      - link [ref=f4e237] [cursor=pointer]:
+        - /url: /campaigns
+        - img [aria-hidden] [ref=f4e44]: auto_stories
+        - generic [ref=f4e45]: DM Admin
+      - button [ref=f4e46] [cursor=pointer]:
+        - img [aria-hidden] [ref=f4e47]: account_circle
+    - main [ref=f4e50]:
+      - generic [ref=f4e170]:
+        - generic [ref=f4e171]:
+          - generic [ref=f4e172]:
+            - link [ref=f4e238] [cursor=pointer]:
+              - /url: /campaigns
+              - img [aria-hidden] [ref=f4e174]: arrow_back
+              - text: Mis Campañas
+            - heading [level=1] [ref=f4e239]: Campaña de Prueba
+            - paragraph [ref=f4e176]: Campaña para testing de features
+          - generic [ref=f4e177]:
+            - button [ref=f4e240]:
+              - img [aria-hidden] [ref=f4e179]: map
+              - generic [ref=f4e180]: Ver Mundo
+            - button [ref=f4e241]:
+              - img [aria-hidden] [ref=f4e184]: person_add
+              - generic [ref=f4e185]: Invitar
+            - button [ref=f4e242]:
+              - img [aria-hidden] [ref=f4e189]: download
+              - generic [ref=f4e190]: Exportar
+        - generic [ref=f4e243]:
+          - img [aria-hidden] [ref=f4e244]: wifi
+          - generic [ref=f4e245]: "En línea ahora:"
+          - generic [ref=f4e246]: DW Churri
+        - generic [ref=f4e193]:
+          - button [ref=f4e248]:
+            - img [aria-hidden] [ref=f4e195]: play_circle
+            - generic [ref=f4e196]: Iniciar sesión de juego
+          - link [ref=f4e249] [cursor=pointer]:
+            - /url: /campaigns/0d053934-bc3e-471d-8539-0c05b87a091c/sessions
+            - img [aria-hidden] [ref=f4e200]: history
+            - generic [ref=f4e201]: Ver historial de sesiones
+        - separator [ref=f4e204]
+        - generic [ref=f4e205]:
+          - generic [ref=f4e206]:
+            - img [aria-hidden] [ref=f4e207]: vpn_key
+            - generic [ref=f4e208]:
+              - generic [ref=f4e209]: Código de unión
+              - generic [ref=f4e210]: 004F9552
+          - generic [ref=f4e211]:
+            - button [ref=f4e250]:
+              - img [aria-hidden] [ref=f4e213]: content_copy
+              - generic [ref=f4e214]: Código
+            - button [ref=f4e251]:
+              - img [aria-hidden] [ref=f4e218]: link
+              - generic [ref=f4e219]: Copiar enlace
+            - button [ref=f4e252]:
+              - img [aria-hidden] [ref=f4e223]: refresh
+              - generic [ref=f4e224]: Regenerar
+        - separator [ref=f4e227]
+        - heading [level=2] [ref=f4e253]: Miembros (0)
+        - table [ref=f4e229]:
+          - rowgroup [ref=f4e230]:
+            - row [ref=f4e254]:
+              - columnheader [ref=f4e232]
+              - columnheader [ref=f4e255]: Nombre
+              - columnheader [ref=f4e256]: Rol
+              - columnheader [ref=f4e257]: Se unió
+              - columnheader [ref=f4e236]
+  - dialog [ref=f4e261]:
+    - generic [ref=f4e264]:
+      - heading "Invitar Jugadores" [level=2] [ref=f4e265]
+      - generic [ref=f4e266]:
+        - paragraph [ref=f4e267]: Genera un link de invitación. Opcionalmente envíalo por email.
+        - generic [ref=f4e270] [cursor=pointer]:
+          - generic: Rol al unirse
+          - combobox "Rol al unirse" [active] [ref=f4e273]
+        - generic [ref=f4e284]:
+          - generic: Email del jugador (opcional)
+          - img [aria-hidden] [ref=f4e287]: email
+          - textbox "Email del jugador (opcional)" [ref=f4e289]:
+            - /placeholder: jugador@ejemplo.com
+        - button "Generar link" [disabled]
+      - button "Cerrar" [ref=f4e292]

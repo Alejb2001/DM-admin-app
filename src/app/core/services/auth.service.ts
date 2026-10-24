@@ -15,15 +15,19 @@ export class AuthService {
 
   private _currentUser = signal<User | null>(null);
   private _pendingVerificationEmail = signal<string | null>(null);
+  private _initialized = signal(false);
 
   readonly currentUser = this._currentUser.asReadonly();
   readonly isAuthenticated = computed(() => this._currentUser() !== null);
   readonly pendingVerificationEmail = this._pendingVerificationEmail.asReadonly();
+  readonly initialized = this._initialized.asReadonly();
 
   constructor() {
     const token = this.getAccessToken();
     if (token) {
       this.loadCurrentUser();
+    } else {
+      this._initialized.set(true);
     }
   }
 
@@ -84,8 +88,14 @@ export class AuthService {
 
   private loadCurrentUser() {
     this.http.get<User>(`${environment.apiUrl}/auth/me`).subscribe({
-      next: user => this._currentUser.set(user),
-      error: () => this.clearSession()
+      next: user => {
+        this._currentUser.set(user);
+        this._initialized.set(true);
+      },
+      error: () => {
+        this.clearSession();
+        this._initialized.set(true);
+      }
     });
   }
 

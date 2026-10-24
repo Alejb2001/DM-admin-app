@@ -1,0 +1,22 @@
+- generic [ref=f5e5]:
+  - generic [ref=f5e7]:
+    - generic [ref=f5e8]: Iniciar sesión
+    - generic [ref=f5e9]: Bienvenido de vuelta, Director
+  - generic [ref=f5e11]:
+    - generic [ref=f5e14]:
+      - generic [ref=f5e15]:
+        - text: Email
+        - generic [aria-hidden] [ref=f5e16]: "*"
+      - textbox "Email" [ref=f5e18]
+    - generic [ref=f5e22]:
+      - generic [ref=f5e23]:
+        - text: Contraseña
+        - generic [aria-hidden] [ref=f5e24]: "*"
+      - textbox "Contraseña" [ref=f5e26]
+      - button "Mostrar contraseña" [ref=f5e28] [cursor=pointer]:
+        - img [aria-hidden] [ref=f5e29]: visibility
+    - button "Entrar" [ref=f5e33]
+  - paragraph [ref=f5e38]:
+    - text: ¿No tienes cuenta?
+    - link "Regístrate" [ref=f5e39] [cursor=pointer]:
+      - /url: /auth/register

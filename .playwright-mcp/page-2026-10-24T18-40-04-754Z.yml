@@ -1,0 +1,30 @@
+- generic [active] [ref=f4e1]:
+  - generic [ref=f4e41]:
+    - generic [ref=f4e42]:
+      - link "DM Admin" [ref=f4e298] [cursor=pointer]:
+        - /url: /campaigns
+        - img [aria-hidden] [ref=f4e44]: auto_stories
+      - button [ref=f4e46] [cursor=pointer]:
+        - img [aria-hidden] [ref=f4e47]: account_circle
+    - main [ref=f4e50]:
+      - generic [ref=f4e319]:
+        - generic [ref=f4e320]:
+          - generic [ref=f4e321]:
+            - heading "Mundo" [level=1] [ref=f4e322]
+            - paragraph [ref=f4e323]: 0 entidades
+          - generic [ref=f4e324]:
+            - button "Grafo" [ref=f4e325]:
+              - img [aria-hidden] [ref=f4e326]: hub
+            - button "Tipos" [ref=f4e330]:
+              - img [aria-hidden] [ref=f4e331]: tune
+            - button "Relaciones" [ref=f4e335] [cursor=pointer]:
+              - img [aria-hidden] [ref=f4e336]: sync_alt
+            - button "Nueva entidad" [ref=f4e340]:
+              - img [aria-hidden] [ref=f4e341]: add
+        - generic [ref=f4e348]:
+          - generic: Buscar entidades...
+          - img [aria-hidden] [ref=f4e351]: search
+          - textbox "Buscar entidades..." [ref=f4e353]
+        - button "Todas" [ref=f4e356]
+        - progressbar [ref=f4e361]
+  - generic: Tipos de relación
