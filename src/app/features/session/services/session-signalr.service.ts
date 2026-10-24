@@ -4,7 +4,7 @@ import * as signalR from '@microsoft/signalr';
 import { environment } from '../../../../environments/environment';
 import { AuthService } from '../../../core/services/auth.service';
 import { ChatMessage, SessionPresenceEntry } from '../models/session.models';
-import { SessionScene, MapToken, TokenMovedEvent } from '../models/map.models';
+import { SessionScene, MapToken, TokenMovedEvent, PingEvent } from '../models/map.models';
 import { CharacterResource } from '../../world/models/character-sheet.models';
 import { FogZone, FogToggledEvent, InitiativeEntry, ConditionChangedEvent } from '../models/vtt-advanced.models';
 
@@ -19,6 +19,7 @@ export class SessionSignalRService {
   readonly sessionEnded$ = new Subject<void>();
 
   // Map events
+  readonly ping$           = new Subject<PingEvent>();
   readonly sceneActivated$ = new Subject<SessionScene>();
   readonly sceneUpdated$   = new Subject<SessionScene>();
   readonly tokenAdded$     = new Subject<MapToken>();
@@ -76,6 +77,10 @@ export class SessionSignalRService {
     }
   }
 
+  async sendPing(sessionId: string, x: number, y: number): Promise<void> {
+    await this.connection?.invoke('SendPing', sessionId, x, y).catch(() => {});
+  }
+
   async leaveSession(sessionId: string): Promise<void> {
     this.currentSessionId = null;
     if (this.connection?.state === signalR.HubConnectionState.Connected) {
@@ -102,6 +107,7 @@ export class SessionSignalRService {
       this.sessionEnded$.next();
     });
 
+    this.connection.on('PingReceived', (ev: PingEvent) => this.ping$.next(ev));
     this.connection.on('SceneActivated',   (scene: SessionScene)      => this.sceneActivated$.next(scene));
     this.connection.on('SceneUpdated',     (scene: SessionScene)      => this.sceneUpdated$.next(scene));
     this.connection.on('TokenAdded',       (token: MapToken)          => this.tokenAdded$.next(token));

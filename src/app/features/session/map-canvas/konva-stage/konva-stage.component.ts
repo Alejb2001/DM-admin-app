@@ -13,6 +13,8 @@ interface TokenDrop {
   y: number;
 }
 
+interface Point { x: number; y: number; }
+
 @Component({
   selector: 'app-konva-stage',
   standalone: true,
@@ -37,22 +39,29 @@ export class KonvaStageComponent implements AfterViewInit, OnDestroy, OnChanges 
     this._fogZones = value;
     if (this.stage) this.renderFog();
   }
+  @Input() set panMode(value: boolean) {
+    this._panMode = value;
+    if (this.stage) this.applyPanMode(value);
+  }
   @Input() currentUserId = '';
   @Input() isDm = false;
 
   @Output() tokenDropped  = new EventEmitter<TokenDrop>();
   @Output() fogZoneDrawn  = new EventEmitter<{ shape: string; x: number; y: number; width?: number; height?: number; radius?: number }>();
   @Output() tokenSelected = new EventEmitter<MapToken | null>();
+  @Output() mapDblClick   = new EventEmitter<Point>();
 
   private _scene: SessionScene | null = null;
   private _tokens: MapToken[] = [];
   private _fogZones: FogZone[] = [];
+  private _panMode = false;
 
   private stage: Konva.Stage | null = null;
   private backgroundLayer!: Konva.Layer;
   private gridLayer!: Konva.Layer;
   private tokenLayer!: Konva.Layer;
   private fogLayer!: Konva.Layer;
+  private uiLayer!: Konva.Layer;
   private tokenMap = new Map<string, Konva.Group>();
   private resizeObserver!: ResizeObserver;
 
@@ -61,6 +70,17 @@ export class KonvaStageComponent implements AfterViewInit, OnDestroy, OnChanges 
   private fogDrawing = false;
   private fogStartPos: { x: number; y: number } | null = null;
   private fogPreview: Konva.Shape | null = null;
+
+  // Pan state (middle-mouse drag)
+  private isPanning = false;
+  private panLastPos = { x: 0, y: 0 };
+
+  // Touch zoom state
+  private lastPinchDist = 0;
+
+  // Cleanup references for window listeners
+  private onWindowMouseMove!: (e: MouseEvent) => void;
+  private onWindowMouseUp!: (e: MouseEvent) => void;
 
   ngAfterViewInit() {
     const el = this.containerRef.nativeElement;
@@ -74,17 +94,27 @@ export class KonvaStageComponent implements AfterViewInit, OnDestroy, OnChanges 
     this.gridLayer = new Konva.Layer();
     this.tokenLayer = new Konva.Layer();
     this.fogLayer = new Konva.Layer();
+    this.uiLayer = new Konva.Layer();
 
     this.stage.add(this.backgroundLayer);
     this.stage.add(this.gridLayer);
     this.stage.add(this.tokenLayer);
     this.stage.add(this.fogLayer);
+    this.stage.add(this.uiLayer);
 
     this.setupFogDrawing();
+    this.setupZoomPan();
 
     // Click on empty stage deselects token
     this.stage.on('click', (e) => {
       if (e.target === this.stage) this.tokenSelected.emit(null);
+    });
+
+    // Double-click on empty stage emits position (for ping)
+    this.stage.on('dblclick', (e) => {
+      if (e.target !== this.stage) return;
+      const pos = this.stage!.getRelativePointerPosition()!;
+      this.mapDblClick.emit(pos);
     });
 
     this.resizeObserver = new ResizeObserver(() => this.onResize());
@@ -94,6 +124,7 @@ export class KonvaStageComponent implements AfterViewInit, OnDestroy, OnChanges 
     if (this._scene) this.applyScene(this._scene);
     this.syncTokens(this._tokens);
     this.renderFog();
+    this.applyPanMode(this._panMode);
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -106,7 +137,120 @@ export class KonvaStageComponent implements AfterViewInit, OnDestroy, OnChanges 
 
   ngOnDestroy() {
     this.resizeObserver?.disconnect();
+    window.removeEventListener('mousemove', this.onWindowMouseMove);
+    window.removeEventListener('mouseup', this.onWindowMouseUp);
     this.stage?.destroy();
+  }
+
+  // ── Zoom / Pan ───────────────────────────────────────────────────────────────
+
+  private setupZoomPan() {
+    const stage = this.stage!;
+    const SCALE_BY = 1.1;
+    const MIN_SCALE = 0.15;
+    const MAX_SCALE = 8;
+
+    // Mouse-wheel zoom centered on pointer
+    stage.on('wheel', (e) => {
+      e.evt.preventDefault();
+      const oldScale = stage.scaleX();
+      const pointer = stage.getPointerPosition()!;
+      const mousePointTo = {
+        x: (pointer.x - stage.x()) / oldScale,
+        y: (pointer.y - stage.y()) / oldScale,
+      };
+      const direction = e.evt.deltaY > 0 ? -1 : 1;
+      const newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE,
+        oldScale * (direction > 0 ? SCALE_BY : 1 / SCALE_BY)));
+      stage.scale({ x: newScale, y: newScale });
+      stage.position({
+        x: pointer.x - mousePointTo.x * newScale,
+        y: pointer.y - mousePointTo.y * newScale,
+      });
+    });
+
+    // Middle-mouse-button drag to pan (always available regardless of panMode)
+    const el = this.containerRef.nativeElement;
+    el.addEventListener('mousedown', (e: MouseEvent) => {
+      if (e.button !== 1) return;
+      e.preventDefault();
+      this.isPanning = true;
+      this.panLastPos = { x: e.clientX, y: e.clientY };
+      el.style.cursor = 'grabbing';
+    });
+    this.onWindowMouseMove = (e: MouseEvent) => {
+      if (!this.isPanning) return;
+      const dx = e.clientX - this.panLastPos.x;
+      const dy = e.clientY - this.panLastPos.y;
+      stage.position({ x: stage.x() + dx, y: stage.y() + dy });
+      this.panLastPos = { x: e.clientX, y: e.clientY };
+    };
+    this.onWindowMouseUp = (e: MouseEvent) => {
+      if (e.button !== 1) return;
+      this.isPanning = false;
+      el.style.cursor = '';
+    };
+    window.addEventListener('mousemove', this.onWindowMouseMove);
+    window.addEventListener('mouseup', this.onWindowMouseUp);
+
+    // Pinch-to-zoom on touch devices
+    stage.on('touchmove', (e) => {
+      const touches = e.evt.touches;
+      if (touches.length !== 2) return;
+      e.evt.preventDefault();
+      const dist = Math.hypot(
+        touches[0].clientX - touches[1].clientX,
+        touches[0].clientY - touches[1].clientY,
+      );
+      if (this.lastPinchDist > 0) {
+        const oldScale = stage.scaleX();
+        const newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE,
+          oldScale * (dist / this.lastPinchDist)));
+        stage.scale({ x: newScale, y: newScale });
+      }
+      this.lastPinchDist = dist;
+    });
+    stage.on('touchend', () => { this.lastPinchDist = 0; });
+  }
+
+  private applyPanMode(enabled: boolean) {
+    if (!this.stage) return;
+    this.stage.draggable(enabled);
+    this.stage.container().style.cursor = enabled ? 'grab' : '';
+    // Toggle token draggability
+    for (const token of this._tokens) {
+      const canDrag = !enabled && (this.isDm || token.controlledBy === this.currentUserId);
+      this.tokenMap.get(token.id)?.draggable(canDrag);
+    }
+  }
+
+  // ── Public API ───────────────────────────────────────────────────────────────
+
+  resetView() {
+    if (!this.stage) return;
+    this.stage.scale({ x: 1, y: 1 });
+    this.stage.position({ x: 0, y: 0 });
+  }
+
+  showPing(x: number, y: number) {
+    if (!this.stage) return;
+    const circle = new Konva.Circle({
+      x, y, radius: 8, fill: 'transparent',
+      stroke: '#ff5722', strokeWidth: 3, opacity: 1,
+      listening: false,
+    });
+    this.uiLayer.add(circle);
+    this.uiLayer.draw();
+
+    const anim = new Konva.Tween({
+      node: circle,
+      duration: 1.2,
+      radius: 80,
+      opacity: 0,
+      easing: Konva.Easings.EaseOut,
+      onFinish: () => { circle.destroy(); this.uiLayer.draw(); },
+    });
+    anim.play();
   }
 
   // ── Public API (called by parent for real-time updates) ─────────────────────
@@ -196,13 +340,13 @@ export class KonvaStageComponent implements AfterViewInit, OnDestroy, OnChanges 
     this.stage.on('mousedown touchstart', (e) => {
       if (!this.fogDrawingTool || !this.isDm) return;
       this.fogDrawing = true;
-      const pos = this.stage!.getPointerPosition()!;
+      const pos = this.stage!.getRelativePointerPosition()!;
       this.fogStartPos = { x: pos.x, y: pos.y };
     });
 
     this.stage.on('mousemove touchmove', () => {
       if (!this.fogDrawing || !this.fogStartPos) return;
-      const pos = this.stage!.getPointerPosition()!;
+      const pos = this.stage!.getRelativePointerPosition()!;
 
       if (this.fogPreview) {
         this.fogPreview.destroy();
@@ -234,7 +378,7 @@ export class KonvaStageComponent implements AfterViewInit, OnDestroy, OnChanges 
 
     this.stage.on('mouseup touchend', () => {
       if (!this.fogDrawing || !this.fogStartPos) return;
-      const pos = this.stage!.getPointerPosition()!;
+      const pos = this.stage!.getRelativePointerPosition()!;
       this.fogDrawing = false;
 
       if (this.fogPreview) {
@@ -349,7 +493,7 @@ export class KonvaStageComponent implements AfterViewInit, OnDestroy, OnChanges 
     if (!token.isVisible && !this.isDm) return;
 
     const gridSize = this._scene?.gridSize ?? 50;
-    const canDrag = this.isDm || token.controlledBy === this.currentUserId;
+    const canDrag = !this._panMode && (this.isDm || token.controlledBy === this.currentUserId);
     const tokenPx = token.width * gridSize;
 
     const group = new Konva.Group({

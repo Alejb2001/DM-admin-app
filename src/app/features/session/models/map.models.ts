@@ -35,3 +35,8 @@ export interface TokenMovedEvent {
   x: number;
   y: number;
 }
+
+export interface PingEvent {
+  x: number;
+  y: number;
+}

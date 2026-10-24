@@ -3,6 +3,9 @@ import {
   OnInit, OnDestroy, ViewChild,
 } from '@angular/core';
 import { Subscription } from 'rxjs';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { SceneService } from '../services/scene.service';
 import { SessionSignalRService } from '../services/session-signalr.service';
 import { VttAdvancedService } from '../services/vtt-advanced.service';
@@ -17,7 +20,8 @@ import { ConditionPickerComponent } from '../token-conditions/condition-picker.c
 @Component({
   selector: 'app-map-canvas',
   standalone: true,
-  imports: [KonvaStageComponent, SceneSelectorComponent, TokenPanelComponent, FogToolbarComponent, ConditionPickerComponent],
+  imports: [KonvaStageComponent, SceneSelectorComponent, TokenPanelComponent, FogToolbarComponent, ConditionPickerComponent,
+    MatButtonModule, MatIconModule, MatTooltipModule],
   template: `
     <div class="map-layout">
       @if (isDm()) {
@@ -57,17 +61,44 @@ import { ConditionPickerComponent } from '../token-conditions/condition-picker.c
         </div>
       }
       <div class="canvas-area">
+        <!-- Floating view controls -->
+        <div class="view-controls">
+          <button mat-mini-fab
+                  (click)="togglePanMode()"
+                  [class.active]="panMode()"
+                  [matTooltip]="panMode() ? 'Modo mover activo (click para desactivar)' : 'Modo mover (arrastra el mapa)'"
+                  color="default" class="view-btn">
+            <mat-icon>pan_tool</mat-icon>
+          </button>
+          <button mat-mini-fab
+                  (click)="resetView()"
+                  matTooltip="Restablecer vista"
+                  color="default" class="view-btn">
+            <mat-icon>fit_screen</mat-icon>
+          </button>
+          @if (isDm()) {
+            <button mat-mini-fab
+                    (click)="sendPingCenter()"
+                    matTooltip="Ping en el centro del mapa (o doble-clic en el mapa)"
+                    color="default" class="view-btn">
+              <mat-icon>location_on</mat-icon>
+            </button>
+          }
+        </div>
+
         @if (activeScene()) {
           <app-konva-stage
             #stage
             [scene]="activeScene()"
             [tokens]="tokens()"
             [fogZones]="fogZones()"
+            [panMode]="panMode()"
             [currentUserId]="currentUserId()"
             [isDm]="isDm()"
             (tokenDropped)="onTokenDropped($event)"
             (fogZoneDrawn)="onFogZoneDrawn($event)"
             (tokenSelected)="selectedToken.set($event)"
+            (mapDblClick)="onMapDblClick($event)"
           />
           @if (selectedToken() && isDm()) {
             <div class="condition-overlay">
@@ -104,6 +135,13 @@ import { ConditionPickerComponent } from '../token-conditions/condition-picker.c
     .dm-panel-bottom { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
     .fog-panel { border-top: 1px solid rgba(255,255,255,0.1); flex-shrink: 0; }
     .canvas-area { flex: 1; overflow: hidden; background: #0d0d1a; position: relative; }
+    .view-controls {
+      position: absolute; top: 8px; right: 8px;
+      display: flex; flex-direction: column; gap: 6px;
+      z-index: 20;
+    }
+    .view-btn { background: rgba(30,30,50,0.85) !important; color: rgba(255,255,255,0.8) !important; }
+    .view-btn.active { color: #ff5722 !important; }
     .condition-overlay {
       position: absolute; bottom: 12px; right: 12px;
       border-radius: 8px; overflow: hidden;
@@ -125,12 +163,13 @@ export class MapCanvasComponent implements OnInit, OnDestroy {
 
   @ViewChild('stage') stageRef?: KonvaStageComponent;
 
-  scenes       = signal<SessionScene[]>([]);
-  tokens       = signal<MapToken[]>([]);
-  fogZones     = signal<FogZone[]>([]);
-  activeScene  = computed(() => this.scenes().find(s => s.isActive) ?? null);
+  scenes        = signal<SessionScene[]>([]);
+  tokens        = signal<MapToken[]>([]);
+  fogZones      = signal<FogZone[]>([]);
+  activeScene   = computed(() => this.scenes().find(s => s.isActive) ?? null);
   selectedToken = signal<MapToken | null>(null);
-  fogTool      = signal<'rect' | 'circle' | null>(null);
+  fogTool       = signal<'rect' | 'circle' | null>(null);
+  panMode       = signal(false);
 
   private sceneService = inject(SceneService);
   private vtt          = inject(VttAdvancedService);
@@ -173,6 +212,9 @@ export class MapCanvasComponent implements OnInit, OnDestroy {
 
   private subscribeSignalR() {
     this.subs.push(
+      this.signalR.ping$.subscribe(ev => {
+        this.stageRef?.showPing(ev.x, ev.y);
+      }),
       this.signalR.sceneActivated$.subscribe(scene => {
         this.scenes.update(list => list.map(s => ({ ...s, isActive: s.id === scene.id })));
         this.loadTokens(scene.id);
@@ -307,6 +349,31 @@ export class MapCanvasComponent implements OnInit, OnDestroy {
       this.fogZones.update(list => [...list, zone]);
       this.stageRef?.renderFog();
     });
+  }
+
+  // ── View controls ──────────────────────────────────────────────────────────
+
+  togglePanMode() {
+    this.panMode.update(v => !v);
+    // Deactivate fog tool when entering pan mode
+    if (this.panMode()) {
+      this.fogTool.set(null);
+      if (this.stageRef) this.stageRef.fogDrawingTool = null;
+    }
+  }
+
+  resetView() {
+    this.stageRef?.resetView();
+  }
+
+  onMapDblClick(pos: { x: number; y: number }) {
+    if (!this.isDm()) return;
+    this.signalR.sendPing(this.sessionId(), pos.x, pos.y);
+  }
+
+  sendPingCenter() {
+    // Ping at the center of the active scene (0,0 in stage coords)
+    this.signalR.sendPing(this.sessionId(), 0, 0);
   }
 
   // ── Condition events ────────────────────────────────────────────────────────
