@@ -3,8 +3,19 @@ import {
   Input, Output, EventEmitter, OnChanges, SimpleChanges,
 } from '@angular/core';
 import Konva from 'konva';
-import { SessionScene, MapToken } from '../../models/map.models';
+import { SessionScene, MapToken, SceneAnnotation, AnnotationType } from '../../models/map.models';
 import { FogZone } from '../../models/vtt-advanced.models';
+
+interface AnnotationDrawPayload {
+  type: AnnotationType;
+  points: number[];
+  color: string;
+  strokeWidth: number;
+  fillColor: string | null;
+  fillOpacity: number;
+  text: string | null;
+  fontSize: number;
+}
 
 interface TokenDrop {
   tokenId: string;
@@ -39,6 +50,10 @@ export class KonvaStageComponent implements AfterViewInit, OnDestroy, OnChanges 
     this._fogZones = value;
     if (this.stage) this.renderFog();
   }
+  @Input() set annotations(value: SceneAnnotation[]) {
+    this._annotations = value;
+    if (this.stage) this.renderAnnotations();
+  }
   @Input() set panMode(value: boolean) {
     this._panMode = value;
     if (this.stage) this.applyPanMode(value);
@@ -46,14 +61,17 @@ export class KonvaStageComponent implements AfterViewInit, OnDestroy, OnChanges 
   @Input() currentUserId = '';
   @Input() isDm = false;
 
-  @Output() tokenDropped  = new EventEmitter<TokenDrop>();
-  @Output() fogZoneDrawn  = new EventEmitter<{ shape: string; x: number; y: number; width?: number; height?: number; radius?: number }>();
-  @Output() tokenSelected = new EventEmitter<MapToken | null>();
-  @Output() mapDblClick   = new EventEmitter<Point>();
+  @Output() tokenDropped      = new EventEmitter<TokenDrop>();
+  @Output() fogZoneDrawn      = new EventEmitter<{ shape: string; x: number; y: number; width?: number; height?: number; radius?: number }>();
+  @Output() tokenSelected     = new EventEmitter<MapToken | null>();
+  @Output() mapDblClick       = new EventEmitter<Point>();
+  @Output() annotationDrawn   = new EventEmitter<AnnotationDrawPayload>();
+  @Output() annotationErased  = new EventEmitter<string>();
 
   private _scene: SessionScene | null = null;
   private _tokens: MapToken[] = [];
   private _fogZones: FogZone[] = [];
+  private _annotations: SceneAnnotation[] = [];
   private _panMode = false;
 
   private stage: Konva.Stage | null = null;
@@ -61,8 +79,10 @@ export class KonvaStageComponent implements AfterViewInit, OnDestroy, OnChanges 
   private gridLayer!: Konva.Layer;
   private tokenLayer!: Konva.Layer;
   private fogLayer!: Konva.Layer;
+  private annotationLayer!: Konva.Layer;
   private uiLayer!: Konva.Layer;
   private tokenMap = new Map<string, Konva.Group>();
+  private annotationMap = new Map<string, Konva.Shape | Konva.Line | Konva.Text | Konva.Arrow>();
   private resizeObserver!: ResizeObserver;
 
   // Fog drawing state
@@ -70,6 +90,18 @@ export class KonvaStageComponent implements AfterViewInit, OnDestroy, OnChanges 
   private fogDrawing = false;
   private fogStartPos: { x: number; y: number } | null = null;
   private fogPreview: Konva.Shape | null = null;
+
+  // Annotation drawing state
+  annotationTool: AnnotationType | 'erase' | null = null;
+  annotationColor = '#ef5350';
+  annotationStrokeWidth = 2;
+  annotationFillColor: string | null = null;
+  annotationFillOpacity = 0;
+  annotationFontSize = 16;
+  private annotDrawing = false;
+  private annotStartPos: { x: number; y: number } | null = null;
+  private annotPenPoints: number[] = [];
+  private annotPreview: Konva.Shape | Konva.Line | Konva.Arrow | null = null;
 
   // Pan state (middle-mouse drag)
   private isPanning = false;
@@ -94,15 +126,18 @@ export class KonvaStageComponent implements AfterViewInit, OnDestroy, OnChanges 
     this.gridLayer = new Konva.Layer();
     this.tokenLayer = new Konva.Layer();
     this.fogLayer = new Konva.Layer();
+    this.annotationLayer = new Konva.Layer();
     this.uiLayer = new Konva.Layer();
 
     this.stage.add(this.backgroundLayer);
     this.stage.add(this.gridLayer);
     this.stage.add(this.tokenLayer);
     this.stage.add(this.fogLayer);
+    this.stage.add(this.annotationLayer);
     this.stage.add(this.uiLayer);
 
     this.setupFogDrawing();
+    this.setupAnnotationDrawing();
     this.setupZoomPan();
 
     // Click on empty stage deselects token
@@ -124,6 +159,7 @@ export class KonvaStageComponent implements AfterViewInit, OnDestroy, OnChanges 
     if (this._scene) this.applyScene(this._scene);
     this.syncTokens(this._tokens);
     this.renderFog();
+    this.renderAnnotations();
     this.applyPanMode(this._panMode);
   }
 
@@ -332,6 +368,277 @@ export class KonvaStageComponent implements AfterViewInit, OnDestroy, OnChanges 
     }
 
     this.fogLayer.draw();
+  }
+
+  // ── Annotations ─────────────────────────────────────────────────────────────
+
+  renderAnnotations() {
+    if (!this.annotationLayer) return;
+    this.annotationLayer.destroyChildren();
+    this.annotationMap.clear();
+    for (const ann of this._annotations) {
+      this.renderOneAnnotation(ann);
+    }
+    this.annotationLayer.draw();
+  }
+
+  addAnnotation(ann: SceneAnnotation) {
+    this.renderOneAnnotation(ann);
+    this.annotationLayer.draw();
+  }
+
+  removeAnnotation(id: string) {
+    const shape = this.annotationMap.get(id);
+    if (shape) { shape.destroy(); this.annotationMap.delete(id); }
+    this.annotationLayer.draw();
+  }
+
+  private renderOneAnnotation(ann: SceneAnnotation) {
+    const pts = ann.points;
+    const commonAttrs = {
+      stroke: ann.color,
+      strokeWidth: ann.strokeWidth,
+      listening: true,
+      name: `ann-${ann.id}`,
+    };
+    const fillAttrs = {
+      fill: ann.fillColor ?? ann.color,
+      fillOpacity: ann.fillOpacity,
+      closed: false,
+    };
+
+    let shape: Konva.Shape | Konva.Line | Konva.Arrow | Konva.Text | null = null;
+
+    switch (ann.type) {
+      case 'pen':
+        shape = new Konva.Line({ ...commonAttrs, points: pts, tension: 0.4, lineCap: 'round' });
+        break;
+      case 'line':
+        shape = new Konva.Line({ ...commonAttrs, points: pts, lineCap: 'round' });
+        break;
+      case 'arrow':
+        shape = new Konva.Arrow({
+          ...commonAttrs,
+          points: pts,
+          pointerLength: Math.max(8, ann.strokeWidth * 3),
+          pointerWidth: Math.max(6, ann.strokeWidth * 2),
+          fill: ann.color,
+        });
+        break;
+      case 'rect':
+        if (pts.length >= 4) {
+          shape = new Konva.Rect({
+            ...commonAttrs,
+            x: pts[0], y: pts[1], width: pts[2], height: pts[3],
+            fill: ann.fillOpacity > 0 ? ann.fillColor ?? ann.color : 'transparent',
+            opacity: ann.fillOpacity > 0 ? ann.fillOpacity : 1,
+          });
+        }
+        break;
+      case 'circle':
+        if (pts.length >= 3) {
+          shape = new Konva.Circle({
+            ...commonAttrs,
+            x: pts[0], y: pts[1], radius: pts[2],
+            fill: ann.fillOpacity > 0 ? ann.fillColor ?? ann.color : 'transparent',
+            opacity: ann.fillOpacity > 0 ? ann.fillOpacity : 1,
+          });
+        }
+        break;
+      case 'text':
+        if (pts.length >= 2) {
+          shape = new Konva.Text({
+            x: pts[0], y: pts[1],
+            text: ann.text ?? '',
+            fontSize: ann.fontSize,
+            fill: ann.color,
+            listening: true,
+            name: `ann-${ann.id}`,
+          });
+        }
+        break;
+    }
+
+    if (!shape) return;
+
+    const node = shape as unknown as Konva.Node;
+    node.on('click', () => {
+      if (this.annotationTool === 'erase') {
+        this.annotationErased.emit(ann.id);
+      }
+    });
+
+    // Highlight on hover in erase mode
+    node.on('mouseenter', () => {
+      if (this.annotationTool === 'erase') {
+        (shape as any).opacity(0.5);
+        this.annotationLayer.draw();
+        this.stage!.container().style.cursor = 'crosshair';
+      }
+    });
+    node.on('mouseleave', () => {
+      (shape as any).opacity(1);
+      this.annotationLayer.draw();
+      if (this.annotationTool === 'erase') this.stage!.container().style.cursor = '';
+    });
+
+    this.annotationMap.set(ann.id, shape as any);
+    this.annotationLayer.add(shape as any);
+  }
+
+  private setupAnnotationDrawing() {
+    if (!this.stage) return;
+
+    this.stage.on('mousedown touchstart', (e) => {
+      if (!this.annotationTool || this.annotationTool === 'erase' || !this.isDm) return;
+      if (e.evt.button === 1) return; // middle mouse reserved for pan
+      this.annotDrawing = true;
+      const pos = this.stage!.getRelativePointerPosition()!;
+      this.annotStartPos = { x: pos.x, y: pos.y };
+      this.annotPenPoints = [pos.x, pos.y];
+
+      if (this.annotationTool === 'text') {
+        this.annotDrawing = false;
+        const text = window.prompt('Texto de la anotación:');
+        if (text) {
+          this.annotationDrawn.emit({
+            type: 'text', points: [pos.x, pos.y], color: this.annotationColor,
+            strokeWidth: this.annotationStrokeWidth, fillColor: null, fillOpacity: 0,
+            text, fontSize: this.annotationFontSize,
+          });
+        }
+      }
+    });
+
+    this.stage.on('mousemove touchmove', () => {
+      if (!this.annotDrawing || !this.annotStartPos || this.annotationTool === 'erase') return;
+      const pos = this.stage!.getRelativePointerPosition()!;
+
+      if (this.annotPreview) {
+        this.annotPreview.destroy();
+        this.annotPreview = null;
+      }
+
+      const color = this.annotationColor;
+      const sw = this.annotationStrokeWidth;
+
+      switch (this.annotationTool) {
+        case 'pen':
+          this.annotPenPoints.push(pos.x, pos.y);
+          this.annotPreview = new Konva.Line({
+            points: [...this.annotPenPoints],
+            stroke: color, strokeWidth: sw, tension: 0.4, lineCap: 'round', listening: false,
+          });
+          break;
+        case 'line':
+          this.annotPreview = new Konva.Line({
+            points: [this.annotStartPos.x, this.annotStartPos.y, pos.x, pos.y],
+            stroke: color, strokeWidth: sw, lineCap: 'round', listening: false,
+          });
+          break;
+        case 'arrow':
+          this.annotPreview = new Konva.Arrow({
+            points: [this.annotStartPos.x, this.annotStartPos.y, pos.x, pos.y],
+            stroke: color, strokeWidth: sw, fill: color,
+            pointerLength: Math.max(8, sw * 3), pointerWidth: Math.max(6, sw * 2), listening: false,
+          });
+          break;
+        case 'rect': {
+          const x = Math.min(pos.x, this.annotStartPos.x);
+          const y = Math.min(pos.y, this.annotStartPos.y);
+          const w = Math.abs(pos.x - this.annotStartPos.x);
+          const h = Math.abs(pos.y - this.annotStartPos.y);
+          this.annotPreview = new Konva.Rect({
+            x, y, width: w, height: h,
+            stroke: color, strokeWidth: sw,
+            fill: this.annotationFillOpacity > 0 ? (this.annotationFillColor ?? color) : 'transparent',
+            opacity: this.annotationFillOpacity > 0 ? this.annotationFillOpacity : 1,
+            listening: false,
+          });
+          break;
+        }
+        case 'circle': {
+          const dx = pos.x - this.annotStartPos.x;
+          const dy = pos.y - this.annotStartPos.y;
+          const r = Math.sqrt(dx * dx + dy * dy);
+          this.annotPreview = new Konva.Circle({
+            x: this.annotStartPos.x, y: this.annotStartPos.y, radius: r,
+            stroke: color, strokeWidth: sw,
+            fill: this.annotationFillOpacity > 0 ? (this.annotationFillColor ?? color) : 'transparent',
+            opacity: this.annotationFillOpacity > 0 ? this.annotationFillOpacity : 1,
+            listening: false,
+          });
+          break;
+        }
+      }
+
+      if (this.annotPreview) {
+        this.annotationLayer.add(this.annotPreview);
+        this.annotationLayer.draw();
+      }
+    });
+
+    this.stage.on('mouseup touchend', () => {
+      if (!this.annotDrawing || !this.annotStartPos) return;
+      const pos = this.stage!.getRelativePointerPosition()!;
+      this.annotDrawing = false;
+
+      if (this.annotPreview) {
+        this.annotPreview.destroy();
+        this.annotPreview = null;
+        this.annotationLayer.draw();
+      }
+
+      const color = this.annotationColor;
+      const sw = this.annotationStrokeWidth;
+      const type = this.annotationTool as AnnotationType;
+      let pts: number[] = [];
+
+      switch (type) {
+        case 'pen':
+          pts = this.annotPenPoints;
+          break;
+        case 'line':
+          pts = [this.annotStartPos.x, this.annotStartPos.y, pos.x, pos.y];
+          break;
+        case 'arrow':
+          pts = [this.annotStartPos.x, this.annotStartPos.y, pos.x, pos.y];
+          break;
+        case 'rect': {
+          const x = Math.min(pos.x, this.annotStartPos.x);
+          const y = Math.min(pos.y, this.annotStartPos.y);
+          const w = Math.abs(pos.x - this.annotStartPos.x);
+          const h = Math.abs(pos.y - this.annotStartPos.y);
+          pts = [x, y, w, h];
+          break;
+        }
+        case 'circle': {
+          const dx = pos.x - this.annotStartPos.x;
+          const dy = pos.y - this.annotStartPos.y;
+          pts = [this.annotStartPos.x, this.annotStartPos.y, Math.sqrt(dx * dx + dy * dy)];
+          break;
+        }
+      }
+
+      const minDist = type === 'pen' ? 5 : 10;
+      const totalDist = pts.length >= 4
+        ? Math.hypot(pts[pts.length - 2] - pts[0], pts[pts.length - 1] - pts[1])
+        : pts.length;
+      if (totalDist < minDist && type !== 'pen') {
+        this.annotStartPos = null;
+        this.annotPenPoints = [];
+        return;
+      }
+
+      this.annotationDrawn.emit({
+        type, points: pts, color, strokeWidth: sw,
+        fillColor: this.annotationFillColor, fillOpacity: this.annotationFillOpacity,
+        text: null, fontSize: this.annotationFontSize,
+      });
+
+      this.annotStartPos = null;
+      this.annotPenPoints = [];
+    });
   }
 
   private setupFogDrawing() {

@@ -41,6 +41,23 @@ export interface MapToken {
   isLocked: boolean;
 }
 
+export type AnnotationType = 'pen' | 'line' | 'arrow' | 'rect' | 'circle' | 'text';
+
+export interface SceneAnnotation {
+  id: string;
+  sceneId: string;
+  type: AnnotationType;
+  points: number[];
+  color: string;
+  strokeWidth: number;
+  fillColor: string | null;
+  fillOpacity: number;
+  text: string | null;
+  fontSize: number;
+  createdBy: string;
+  createdAt: string;
+}
+
 export interface TokenMovedEvent {
   tokenId: string;
   x: number;

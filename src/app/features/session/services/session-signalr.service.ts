@@ -4,7 +4,7 @@ import * as signalR from '@microsoft/signalr';
 import { environment } from '../../../../environments/environment';
 import { AuthService } from '../../../core/services/auth.service';
 import { ChatMessage, SessionPresenceEntry } from '../models/session.models';
-import { SessionScene, MapToken, TokenMovedEvent, PingEvent } from '../models/map.models';
+import { SessionScene, MapToken, TokenMovedEvent, PingEvent, SceneAnnotation } from '../models/map.models';
 import { CharacterResource } from '../../world/models/character-sheet.models';
 import { FogZone, FogToggledEvent, InitiativeEntry, ConditionChangedEvent } from '../models/vtt-advanced.models';
 
@@ -35,6 +35,11 @@ export class SessionSignalRService {
   readonly fogZoneRemoved$ = new Subject<string>();
   readonly fogCleared$     = new Subject<string>(); // sceneId
   readonly fogToggled$     = new Subject<FogToggledEvent>();
+
+  // Annotation events
+  readonly annotationAdded$    = new Subject<SceneAnnotation>();
+  readonly annotationRemoved$  = new Subject<string>(); // annotationId
+  readonly annotationsCleared$ = new Subject<string>(); // sceneId
 
   // Combat events
   readonly initiativeUpdated$     = new Subject<InitiativeEntry[]>();
@@ -115,6 +120,10 @@ export class SessionSignalRService {
     this.connection.on('TokenUpdated',     (token: MapToken)          => this.tokenUpdated$.next(token));
     this.connection.on('TokenRemoved',     (tokenId: string)          => this.tokenRemoved$.next(tokenId));
     this.connection.on('ResourceUpdated',  (r: CharacterResource)     => this.resourceUpdated$.next(r));
+
+    this.connection.on('AnnotationAdded',    (a: SceneAnnotation) => this.annotationAdded$.next(a));
+    this.connection.on('AnnotationRemoved',  (id: string)         => this.annotationRemoved$.next(id));
+    this.connection.on('AnnotationsCleared', (sceneId: string)    => this.annotationsCleared$.next(sceneId));
 
     this.connection.on('FogZoneAdded',   (z: FogZone)              => this.fogZoneAdded$.next(z));
     this.connection.on('FogZoneRemoved', (id: string)              => this.fogZoneRemoved$.next(id));

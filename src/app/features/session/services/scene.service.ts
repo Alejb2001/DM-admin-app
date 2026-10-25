@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
-import { SessionScene, MapToken } from '../models/map.models';
+import { SessionScene, MapToken, SceneAnnotation } from '../models/map.models';
 
 @Injectable({ providedIn: 'root' })
 export class SceneService {
@@ -73,5 +73,30 @@ export class SceneService {
   deleteToken(campaignId: string, sessionId: string, sceneId: string, tokenId: string): Observable<void> {
     return this.http.delete<void>(
       `${this.base(campaignId, sessionId)}/${sceneId}/tokens/${tokenId}`);
+  }
+
+  // ── Annotations ─────────────────────────────────────────────────────────────
+
+  getAnnotations(campaignId: string, sessionId: string, sceneId: string): Observable<SceneAnnotation[]> {
+    return this.http.get<SceneAnnotation[]>(
+      `${this.base(campaignId, sessionId)}/${sceneId}/annotations`);
+  }
+
+  addAnnotation(campaignId: string, sessionId: string, sceneId: string, dto: {
+    type: string; points: number[]; color: string; strokeWidth: number;
+    fillColor?: string | null; fillOpacity?: number; text?: string | null; fontSize?: number;
+  }): Observable<SceneAnnotation> {
+    return this.http.post<SceneAnnotation>(
+      `${this.base(campaignId, sessionId)}/${sceneId}/annotations`, dto);
+  }
+
+  deleteAnnotation(campaignId: string, sessionId: string, sceneId: string, annotationId: string): Observable<void> {
+    return this.http.delete<void>(
+      `${this.base(campaignId, sessionId)}/${sceneId}/annotations/${annotationId}`);
+  }
+
+  clearAnnotations(campaignId: string, sessionId: string, sceneId: string): Observable<void> {
+    return this.http.delete<void>(
+      `${this.base(campaignId, sessionId)}/${sceneId}/annotations`);
   }
 }

@@ -9,18 +9,20 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { SceneService } from '../services/scene.service';
 import { SessionSignalRService } from '../services/session-signalr.service';
 import { VttAdvancedService } from '../services/vtt-advanced.service';
-import { SessionScene, MapToken } from '../models/map.models';
+import { SessionScene, MapToken, SceneAnnotation } from '../models/map.models';
 import { FogZone } from '../models/vtt-advanced.models';
 import { KonvaStageComponent } from './konva-stage/konva-stage.component';
 import { SceneSelectorComponent } from './scene-selector/scene-selector.component';
 import { TokenPanelComponent } from './token-panel/token-panel.component';
 import { FogToolbarComponent } from '../fog-of-war/fog-toolbar.component';
 import { ConditionPickerComponent } from '../token-conditions/condition-picker.component';
+import { AnnotationToolbarComponent, AnnotationTool } from './annotation-toolbar/annotation-toolbar.component';
 
 @Component({
   selector: 'app-map-canvas',
   standalone: true,
-  imports: [KonvaStageComponent, SceneSelectorComponent, TokenPanelComponent, FogToolbarComponent, ConditionPickerComponent,
+  imports: [KonvaStageComponent, SceneSelectorComponent, TokenPanelComponent, FogToolbarComponent,
+    ConditionPickerComponent, AnnotationToolbarComponent,
     MatButtonModule, MatIconModule, MatTooltipModule],
   template: `
     <div class="map-layout">
@@ -59,6 +61,19 @@ import { ConditionPickerComponent } from '../token-conditions/condition-picker.c
                 (clearFog)="onClearFog()"
               />
             </div>
+            <div class="ann-panel">
+              <app-annotation-toolbar
+                [activeTool]="annotationTool()"
+                [activeColor]="annotationColor()"
+                [activeStroke]="annotationStroke()"
+                [activeFill]="annotationFill()"
+                (toolChange)="onSetAnnotationTool($event)"
+                (colorChange)="onAnnotationColor($event)"
+                (strokeChange)="onAnnotationStroke($event)"
+                (fillChange)="onAnnotationFill($event)"
+                (clearAll)="onClearAnnotations()"
+              />
+            </div>
           }
         </div>
       }
@@ -94,6 +109,7 @@ import { ConditionPickerComponent } from '../token-conditions/condition-picker.c
             [scene]="activeScene()"
             [tokens]="tokens()"
             [fogZones]="fogZones()"
+            [annotations]="annotations()"
             [panMode]="panMode()"
             [currentUserId]="currentUserId()"
             [isDm]="isDm()"
@@ -101,6 +117,8 @@ import { ConditionPickerComponent } from '../token-conditions/condition-picker.c
             (fogZoneDrawn)="onFogZoneDrawn($event)"
             (tokenSelected)="selectedToken.set($event)"
             (mapDblClick)="onMapDblClick($event)"
+            (annotationDrawn)="onAnnotationDrawn($event)"
+            (annotationErased)="onAnnotationErased($event)"
           />
           @if (selectedToken() && isDm()) {
             <div class="condition-overlay">
@@ -136,6 +154,7 @@ import { ConditionPickerComponent } from '../token-conditions/condition-picker.c
     .dm-panel-top { flex: 1; overflow: hidden; display: flex; flex-direction: column; border-bottom: 1px solid rgba(255,255,255,0.1); }
     .dm-panel-bottom { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
     .fog-panel { border-top: 1px solid rgba(255,255,255,0.1); flex-shrink: 0; }
+    .ann-panel { border-top: 1px solid rgba(255,255,255,0.1); flex-shrink: 0; overflow-y: auto; }
     .canvas-area { flex: 1; overflow: hidden; background: #0d0d1a; position: relative; }
     .view-controls {
       position: absolute; top: 8px; right: 8px;
@@ -168,10 +187,15 @@ export class MapCanvasComponent implements OnInit, OnDestroy {
   scenes        = signal<SessionScene[]>([]);
   tokens        = signal<MapToken[]>([]);
   fogZones      = signal<FogZone[]>([]);
+  annotations   = signal<SceneAnnotation[]>([]);
   activeScene   = computed(() => this.scenes().find(s => s.isActive) ?? null);
   selectedToken = signal<MapToken | null>(null);
   fogTool       = signal<'rect' | 'circle' | null>(null);
   panMode       = signal(false);
+  annotationTool   = signal<AnnotationTool | null>(null);
+  annotationColor  = signal('#ef5350');
+  annotationStroke = signal(2);
+  annotationFill   = signal(0);
 
   private sceneService = inject(SceneService);
   private vtt          = inject(VttAdvancedService);
@@ -196,6 +220,7 @@ export class MapCanvasComponent implements OnInit, OnDestroy {
       if (active) {
         this.loadTokens(active.id);
         this.loadFogZones(active.id);
+        this.loadAnnotations(active.id);
       }
     });
   }
@@ -210,6 +235,11 @@ export class MapCanvasComponent implements OnInit, OnDestroy {
       .subscribe(zones => this.fogZones.set(zones));
   }
 
+  private loadAnnotations(sceneId: string) {
+    this.sceneService.getAnnotations(this.campaignId(), this.sessionId(), sceneId)
+      .subscribe(list => this.annotations.set(list));
+  }
+
   // ── SignalR ────────────────────────────────────────────────────────────────
 
   private subscribeSignalR() {
@@ -220,6 +250,7 @@ export class MapCanvasComponent implements OnInit, OnDestroy {
       this.signalR.sceneActivated$.subscribe(scene => {
         this.scenes.update(list => list.map(s => ({ ...s, isActive: s.id === scene.id })));
         this.loadTokens(scene.id);
+        this.loadAnnotations(scene.id);
       }),
       this.signalR.sceneUpdated$.subscribe(scene => {
         this.scenes.update(list => {
@@ -272,6 +303,24 @@ export class MapCanvasComponent implements OnInit, OnDestroy {
         this.stageRef?.renderFog();
       }),
 
+      // Annotation events
+      this.signalR.annotationAdded$.subscribe(ann => {
+        if (ann.sceneId === this.activeScene()?.id) {
+          this.annotations.update(list => [...list, ann]);
+          this.stageRef?.addAnnotation(ann);
+        }
+      }),
+      this.signalR.annotationRemoved$.subscribe(id => {
+        this.annotations.update(list => list.filter(a => a.id !== id));
+        this.stageRef?.removeAnnotation(id);
+      }),
+      this.signalR.annotationsCleared$.subscribe(sceneId => {
+        if (sceneId === this.activeScene()?.id) {
+          this.annotations.set([]);
+          this.stageRef?.renderAnnotations();
+        }
+      }),
+
       // Condition events
       this.signalR.conditionAdded$.subscribe(ev => {
         this.tokens.update(list => list.map(t =>
@@ -305,6 +354,7 @@ export class MapCanvasComponent implements OnInit, OnDestroy {
     this.scenes.update(list => list.map(s => ({ ...s, isActive: s.id === scene.id })));
     this.loadTokens(scene.id);
     this.loadFogZones(scene.id);
+    this.loadAnnotations(scene.id);
   }
 
   // ── Token events ───────────────────────────────────────────────────────────
@@ -339,6 +389,10 @@ export class MapCanvasComponent implements OnInit, OnDestroy {
   onSetFogTool(tool: 'rect' | 'circle' | null) {
     this.fogTool.set(tool);
     if (this.stageRef) this.stageRef.fogDrawingTool = tool;
+    if (tool) {
+      this.annotationTool.set(null);
+      if (this.stageRef) this.stageRef.annotationTool = null;
+    }
   }
 
   onClearFog() {
@@ -359,14 +413,74 @@ export class MapCanvasComponent implements OnInit, OnDestroy {
     });
   }
 
+  // ── Annotation events ────────────────────────────────────────────────────────
+
+  onSetAnnotationTool(tool: AnnotationTool | null) {
+    this.annotationTool.set(tool);
+    if (this.stageRef) this.stageRef.annotationTool = tool;
+    // Deactivate fog tool when annotation tool activates
+    if (tool) {
+      this.fogTool.set(null);
+      if (this.stageRef) this.stageRef.fogDrawingTool = null;
+    }
+  }
+
+  onAnnotationColor(color: string) {
+    this.annotationColor.set(color);
+    if (this.stageRef) this.stageRef.annotationColor = color;
+  }
+
+  onAnnotationStroke(px: number) {
+    this.annotationStroke.set(px);
+    if (this.stageRef) this.stageRef.annotationStrokeWidth = px;
+  }
+
+  onAnnotationFill(opacity: number) {
+    this.annotationFill.set(opacity);
+    if (this.stageRef) this.stageRef.annotationFillOpacity = opacity;
+  }
+
+  onAnnotationDrawn(payload: { type: string; points: number[]; color: string; strokeWidth: number;
+      fillColor: string | null; fillOpacity: number; text: string | null; fontSize: number }) {
+    const scene = this.activeScene();
+    if (!scene) return;
+    this.sceneService.addAnnotation(this.campaignId(), this.sessionId(), scene.id, payload)
+      .subscribe(ann => {
+        this.annotations.update(list => [...list, ann]);
+        this.stageRef?.addAnnotation(ann);
+      });
+  }
+
+  onAnnotationErased(annotationId: string) {
+    const scene = this.activeScene();
+    if (!scene) return;
+    this.sceneService.deleteAnnotation(this.campaignId(), this.sessionId(), scene.id, annotationId)
+      .subscribe(() => {
+        this.annotations.update(list => list.filter(a => a.id !== annotationId));
+        this.stageRef?.removeAnnotation(annotationId);
+      });
+  }
+
+  onClearAnnotations() {
+    const scene = this.activeScene();
+    if (!scene) return;
+    this.sceneService.clearAnnotations(this.campaignId(), this.sessionId(), scene.id)
+      .subscribe(() => {
+        this.annotations.set([]);
+        this.stageRef?.renderAnnotations();
+      });
+  }
+
   // ── View controls ──────────────────────────────────────────────────────────
 
   togglePanMode() {
     this.panMode.update(v => !v);
-    // Deactivate fog tool when entering pan mode
+    // Deactivate drawing tools when entering pan mode
     if (this.panMode()) {
       this.fogTool.set(null);
       if (this.stageRef) this.stageRef.fogDrawingTool = null;
+      this.annotationTool.set(null);
+      if (this.stageRef) this.stageRef.annotationTool = null;
     }
   }
 
